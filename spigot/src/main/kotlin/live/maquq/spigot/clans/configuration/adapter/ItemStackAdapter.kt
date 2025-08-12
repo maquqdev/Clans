@@ -10,7 +10,6 @@ import java.lang.reflect.Type
 
 class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
 
-    // Instancja MiniMessage jest teraz jedynym źródłem prawdy o (de)serializacji komponentów.
     private val miniMessage = MiniMessage.miniMessage()
 
     override fun serialize(item: ItemStack, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
@@ -20,7 +19,6 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
         if (item.hasItemMeta()) {
             val meta = item.itemMeta!!
 
-            // --- JAWNA KONTROLA SERIALIZACJI ---
             if (meta.hasDisplayName()) {
                 obj.addProperty("name", miniMessage.serialize(meta.displayName()!!))
             }
@@ -31,7 +29,6 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
                 }
                 obj.add("lore", loreArray)
             }
-            // --- KONIEC ZMIANY ---
 
             if (meta.hasEnchants()) {
                 val enchantsObj = JsonObject()
@@ -53,14 +50,11 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
         val item = ItemStack(material)
         val meta = item.itemMeta ?: return item
 
-        // --- JAWNA KONTROLA DESERIALIZACJI ---
         obj.get("name")?.asString?.let { meta.displayName(miniMessage.deserialize(it)) }
 
         obj.get("lore")?.asJsonArray?.map { element ->
-            // Upewniamy się, że każdy element w liście jest traktowany jako string
             miniMessage.deserialize(element.asString)
         }?.let { meta.lore(it) }
-        // --- KONIEC ZMIANY ---
 
         obj.get("enchants")?.asJsonObject?.entrySet()?.forEach { entry ->
             Enchantment.getByName(entry.key.uppercase())?.let { enchant ->
