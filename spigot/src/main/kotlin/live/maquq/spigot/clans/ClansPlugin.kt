@@ -1,9 +1,6 @@
 package live.maquq.spigot.clans
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import live.maquq.api.DataSource
 import live.maquq.spigot.clans.configuration.Config
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
@@ -49,9 +46,9 @@ class ClansPlugin : JavaPlugin() {
         this.logger.info(
             """\n
              ／l、         
-           （ﾟ､ ｡７           Dziękuje za korzystanie
-            l、ﾞ~ヽ              z mojego pluginu!
-            じしf_, )ノ             maquq @ 2025
+           （ﾟ､ ｡７           Thanks for using
+            l、ﾞ~ヽ              my plugin!
+            じしf_, )ノ         maquq @ 2025
         """.trimIndent()
         )
 
@@ -64,7 +61,7 @@ class ClansPlugin : JavaPlugin() {
         this.dataSource = initializeDataSource(mainConfig.get)
 
         if (!this.setupDataSource()) {
-            this.logger.error("Połaczenie do bazy danych nie powiodła się. Połącz poprawnie plugin w configuration.json i zrestartuj plugin :)")
+            this.logger.error("Connection to database failed. Change database login credentials :)")
             this.server.pluginManager.disablePlugin(this)
             return
         }
@@ -72,7 +69,9 @@ class ClansPlugin : JavaPlugin() {
         this.setupManagers()
         this.registerIntegrations()
 
-        this.logger.info("Plugin został pomyslnie załadowany!")
+        this.loadClansToCache()
+
+        this.logger.info("")
     }
 
     override fun onDisable() {
@@ -96,6 +95,7 @@ class ClansPlugin : JavaPlugin() {
                     "password" to config.mysql.password
                 )
             )
+
             StorageType.MONGODB -> MongoDataSource(config.mongo.connectionString)
         }
     }
@@ -107,6 +107,10 @@ class ClansPlugin : JavaPlugin() {
         }.onFailure {
             this.logger.error("Nie udało się połączyć z bazą danych! Sprawdź konfigurację i logi.", it)
         }.isSuccess
+    }
+
+    private fun loadClansToCache() {
+        scope.launch { clanManager.preloadAllClansToCache() }
     }
 
     private fun setupManagers() {

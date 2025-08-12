@@ -38,6 +38,13 @@ class FlatDataSource(private val dataFolder: File) : DataSource {
         }
     }
 
+    override suspend fun removeUser(user: User) {
+        withContext(Dispatchers.IO) {
+            runCatching { File(userFolder, "${user.uuid}.json").delete() }
+                .onFailure { it.printStackTrace() }
+        }
+    }
+
     override suspend fun loadClan(tag: String): Clan? = withContext(Dispatchers.IO) {
         val clanFile = File(clanFolder, "$tag.json")
         if (!clanFile.exists()) return@withContext null

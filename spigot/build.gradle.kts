@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.jetbrains.kotlin.backend.jvm.lower.jvmArgumentNullabilityAssertions
 
 plugins {
     kotlin("jvm")
@@ -43,6 +42,7 @@ dependencies {
     tasks {
         named<ShadowJar>("shadowJar") {
             relocate("kotlinx.coroutines", "live.maquq.libs.coroutines")
+            relocate("_COROUTINE", "live.maquq.libs.coroutines")
             relocate("com.google.gson", "live.maquq.libs.gson")
             relocate("com.zaxxer.hikari", "live.maquq.libs.hikaricp")
             relocate("org.mongodb", "live.maquq.libs.mongodb")

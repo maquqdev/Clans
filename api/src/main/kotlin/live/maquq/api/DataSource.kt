@@ -9,6 +9,7 @@ interface DataSource {
 
     suspend fun loadUser(uuid: UUID): User?
     suspend fun saveUser(user: User)
+    suspend fun removeUser(user: User)
 
     suspend fun loadClan(tag: String): Clan?
     suspend fun saveClan(clan: Clan)

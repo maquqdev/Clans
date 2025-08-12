@@ -43,6 +43,12 @@ class MongoDataSource(private val connectionString: String) : DataSource {
         }
     }
 
+    override suspend fun removeUser(user: User) {
+        withContext(Dispatchers.IO) {
+            usersCollection.deleteOne(Filters.eq("_id", user.uuid))
+        }
+    }
+
     override suspend fun loadClan(tag: String): Clan? = withContext(Dispatchers.IO) {
         clansCollection.find(Filters.eq("_id", tag)).first()
     }

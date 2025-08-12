@@ -18,6 +18,5 @@ class PlayerJoinListener(
         this.scope.launch {
             userManager.getUser(player.uniqueId) ?: userManager.createNewUser(player)
         }
-
     }
 }

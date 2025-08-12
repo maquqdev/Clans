@@ -133,6 +133,21 @@ class MySqlDataSource(private val settings: Map<String, Any?>) : DataSource {
         }
     }
 
+    override suspend fun removeUser(user: User) {
+        withContext(Dispatchers.IO) {
+            try {
+                hikari.connection.use { conn ->
+                    conn.prepareStatement("DELETE FROM users WHERE uuid = ?").use { stmt ->
+                        stmt.setString(1, user.uuid.toString())
+                        stmt.executeUpdate()
+                    }
+                }
+            } catch (exception: Exception) {
+                throw RuntimeException("Failed to remove user with UUID: ${user.uuid}", exception)
+            }
+        }
+    }
+
     override suspend fun loadClan(tag: String): Clan? = try {
         transaction { conn ->
             val clanData = conn.prepareStatement("SELECT * FROM clans WHERE tag = ?").use { stmt ->
