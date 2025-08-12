@@ -29,7 +29,7 @@ class BukkitLogger(
     private val legacySerializer = LegacyComponentSerializer.legacySection()
 
     private val logDateFormat = SimpleDateFormat("HH:mm")
-    private val fileDateFormat = SimpleDateFormat("yyyy/MM/dd")
+    private val fileDateFormat = SimpleDateFormat("yyyy/MM/dd") //enterprise date format (only valid ofc)
 
     private val logFolder = File(plugin.dataFolder, "logs")
     private var currentLogFile: File? = null
@@ -70,13 +70,17 @@ class BukkitLogger(
         this.plugin.logger.log(level, legacyMessage, throwable)
 
         scope.launch {
-            try {
+            runCatching {
                 logChannel.send(fileMessage)
-                if (throwable != null) {
-                    logChannel.send(throwable.stackTraceToString())
-                }
-            } catch (ignored: ClosedSendChannelException) {
+                throwable.let { if (it != null) logChannel.send(it.stackTraceToString()) }
             }
+//            try {
+//                logChannel.send(fileMessage)
+//                if (throwable != null) {
+//                    logChannel.send(throwable.stackTraceToString())
+//                }
+//            } catch (ignored: ClosedSendChannelException) {
+//            }
         }
     }
 
@@ -85,11 +89,11 @@ class BukkitLogger(
             try {
                 val file = getAndPrepareTodaysLogFile()
                 file.appendText("$message\n")
-            } catch (e: Exception) {
+            } catch (exception: Exception) {
                 plugin.logger.log(
                     Level.SEVERE,
                     "Krytyczny błąd zapisu do pliku logu! Zapis do pliku zostaje wyłączony.",
-                    e
+                    exception
                 )
                 logChannel.close()
             }
@@ -100,8 +104,10 @@ class BukkitLogger(
         val today = fileDateFormat.format(Date())
         val currentFileName = "$today.log"
         if (currentLogFile?.name == currentFileName) return currentLogFile!!
+
         val newLogFile = File(logFolder, currentFileName)
         if (!newLogFile.parentFile.exists()) newLogFile.parentFile.mkdirs()
+
         return newLogFile.also { currentLogFile = it }
     }
 
@@ -117,9 +123,10 @@ class BukkitLogger(
 
     private fun formatForFile(level: Level, message: String): String {
         val timestamp = logDateFormat.format(Date())
-        val levelName = level.name.padEnd(7)
+        val levelName = level.name.padEnd(7) //tuff kot
         val parsedComponent = this.miniMessage.deserialize(message)
         val cleanMessage = PlainTextComponentSerializer.plainText().serialize(parsedComponent)
+
         return "[$timestamp] [$levelName] $cleanMessage"
     }
 }

@@ -31,6 +31,8 @@ class ClansPlugin : JavaPlugin() {
             * /klan ulepsz
        Kilka systemów punktów
        Title po zabójstwie
+
+       ehhh zas te not null safety kod... po co ten kotlin???????
      */
 
     private val job = SupervisorJob()
@@ -59,21 +61,7 @@ class ClansPlugin : JavaPlugin() {
             this.logger
         )
 
-        val config = mainConfig.get
-        this.dataSource = when (config.storage) {
-            StorageType.FLAT -> FlatDataSource(this.dataFolder)
-            StorageType.MYSQL -> MySqlDataSource(
-                mapOf(
-                    "host" to config.mysql.host,
-                    "port" to config.mysql.port,
-                    "database" to config.mysql.database,
-                    "username" to config.mysql.username,
-                    "password" to config.mysql.password
-                )
-            )
-
-            StorageType.MONGODB -> MongoDataSource(config.mongo.connectionString)
-        }
+        this.dataSource = initializeDataSource(mainConfig.get)
 
         if (!this.setupDataSource()) {
             this.logger.error("Połaczenie do bazy danych nie powiodła się. Połącz poprawnie plugin w configuration.json i zrestartuj plugin :)")
@@ -91,9 +79,25 @@ class ClansPlugin : JavaPlugin() {
         this.mainConfig.shutdown()
         this.dataSource.disconnect()
         this.logger.shutdown()
-        this.job.cancel() //dont slur...🌹🌺🌺
+        this.job.cancel() //need to cancel slur...🌹🌺🌺
 
         super.getLogger().info("Plugin został wyłączony, dziękuje za korzystanie z niego.")
+    }
+
+    private fun initializeDataSource(config: PluginConfiguration): DataSource {
+        return when (config.storage) {
+            StorageType.FLAT -> FlatDataSource(this.dataFolder)
+            StorageType.MYSQL -> MySqlDataSource(
+                mapOf(
+                    "host" to config.mysql.host,
+                    "port" to config.mysql.port,
+                    "database" to config.mysql.database,
+                    "username" to config.mysql.username,
+                    "password" to config.mysql.password
+                )
+            )
+            StorageType.MONGODB -> MongoDataSource(config.mongo.connectionString)
+        }
     }
 
     private fun setupDataSource(): Boolean {
