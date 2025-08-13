@@ -43,7 +43,7 @@ dependencies {
         named<ShadowJar>("shadowJar") {
             relocate("kotlinx.coroutines", "live.maquq.libs.coroutines")
             relocate("_COROUTINE", "live.maquq.libs.coroutines")
-            relocate("com.google.gson", "live.maquq.libs.gson")
+//            relocate("com.google.gson", "live.maquq.libs.gson")
             relocate("com.zaxxer.hikari", "live.maquq.libs.hikaricp")
             relocate("org.mongodb", "live.maquq.libs.mongodb")
             relocate("org.bson", "live.maquq.libs.bson")
