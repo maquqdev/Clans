@@ -1,7 +1,14 @@
 package live.maquq.spigot.clans
 
+import com.bruhdows.minitext.MiniText
+import com.bruhdows.minitext.formatter.FormatterType
+import dev.rollczi.litecommands.LiteCommands
+import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
 import live.maquq.api.DataSource
+import live.maquq.spigot.clans.commands.ClanCommand
+import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
+import live.maquq.spigot.clans.commands.handler.InvalidUsageHandler
 import live.maquq.spigot.clans.configuration.Config
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.configuration.impl.StorageType
@@ -11,6 +18,7 @@ import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.storage.impl.FlatDataSource
 import live.maquq.storage.impl.MongoDataSource
 import live.maquq.storage.impl.MySqlDataSource
+import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -37,8 +45,13 @@ class ClansPlugin : JavaPlugin() {
 
     private val logger: BukkitLogger = BukkitLogger(this, true) //TODO: Get debug mode from config, don't hardcode
 
-    private lateinit var mainConfig: Config<PluginConfiguration>
+    private lateinit var miniText: MiniText
+
     private lateinit var dataSource: DataSource
+    private lateinit var mainConfig: Config<PluginConfiguration>
+
+    private lateinit var liteCommands: LiteCommands<CommandSender>
+
     private lateinit var userManager: UserManager
     private lateinit var clanManager: ClanManager
 
@@ -51,6 +64,9 @@ class ClansPlugin : JavaPlugin() {
             じしf_, )ノ         maquq @ 2025
         """.trimIndent()
         )
+        this.miniText = MiniText.builder()
+            .enableFormatter(FormatterType.LEGACY, FormatterType.NAMED_COLORS, FormatterType.HEX, FormatterType.NEW_LINES, FormatterType.DECORATIONS)
+            .build()
 
         this.mainConfig = Config(
             PluginConfiguration::class.java,
@@ -70,8 +86,9 @@ class ClansPlugin : JavaPlugin() {
         this.registerIntegrations()
 
         this.loadClansToCache()
+        this.loadCommands()
 
-        this.logger.info("")
+        this.logger.info("Plugin has been successfully loaded!")
     }
 
     override fun onDisable() {
@@ -80,7 +97,7 @@ class ClansPlugin : JavaPlugin() {
         this.logger.shutdown()
         this.job.cancel() //need to cancel slur...🌹🌺🌺
 
-        super.getLogger().info("Plugin został wyłączony, dziękuje za korzystanie z niego.")
+        super.getLogger().info("Plugin has been successfully disabled!")
     }
 
     private fun initializeDataSource(config: PluginConfiguration): DataSource {
@@ -103,9 +120,9 @@ class ClansPlugin : JavaPlugin() {
     private fun setupDataSource(): Boolean {
         return runCatching {
             this.dataSource.connect()
-            this.logger.info("Połączono z bazą danych (${mainConfig.get.storage})")
+            this.logger.info("Successfully connected to database! (${mainConfig.get.storage})")
         }.onFailure {
-            this.logger.error("Nie udało się połączyć z bazą danych! Sprawdź konfigurację i logi.", it)
+            this.logger.error("Cannot connect to database, check configuration please!", it)
         }.isSuccess
     }
 
@@ -121,8 +138,29 @@ class ClansPlugin : JavaPlugin() {
         this.userManager = UserManager(
             this.dataSource,
             this.clanManager,
-            this.logger
+            this.logger,
+            scope
         )
+    }
+
+    private fun loadCommands() {
+        this.liteCommands = LiteBukkitFactory.builder()
+            .missingPermission(
+                InsufficientPermissionHandler(
+                    this.miniText,
+                    this.mainConfig.get
+                )
+            )
+            .invalidUsage(
+                InvalidUsageHandler(
+                    this.miniText,
+                    this.mainConfig.get
+                )
+            )
+            .commands(
+                ClanCommand()
+            )
+            .build()
     }
 
     private fun registerIntegrations() {

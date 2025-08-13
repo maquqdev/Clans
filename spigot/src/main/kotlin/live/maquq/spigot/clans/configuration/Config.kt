@@ -46,13 +46,13 @@ class Config<T : ConfigTemplate>(
                 FileReader(file).use { reader ->
                     this.get = gson.fromJson(reader, configClass)
                 }
-                logger.info("Plik '${file.name}' został wczytany pomyslnie.")
+                logger.debug("File '${file.name}' has been loaded.")
             }.onFailure {
-                logger.error("Nie udało się załadować pliku '${file.name}'! - tworze nową, sorki.", it)
+                logger.error("Cannot load '${file.name}'! - Creating a new, sorry!", it)
                 createDefault()
             }
         } else {
-            logger.info("Plik '${file.name}' nie istnieje. Tworze nowy.")
+            logger.debug("Creating a new file '${file.name}'.")
             createDefault()
         }
     }
@@ -62,7 +62,7 @@ class Config<T : ConfigTemplate>(
             this.get = configClass.getConstructor().newInstance()
             saveToFile()
         }.onFailure {
-            logger.error("Nie udało się stworzyć domyślnej instancji konfiguracji '${file.name}'!", it)
+            logger.error("Cannot create a new instance to file '${file.name}'!", it)
         }
     }
 
@@ -71,7 +71,7 @@ class Config<T : ConfigTemplate>(
     }
 
     fun reload() {
-        logger.info("Przeładowywanie konfiguracji '${file.name}'...")
+        logger.debug("Reloading '${file.name}'...")
         loadFromFile()
     }
 
@@ -80,9 +80,9 @@ class Config<T : ConfigTemplate>(
             FileWriter(file).use { writer ->
                 gson.toJson(this.get, writer)
             }
-            logger.debug("Konfiguracja '${file.name}' została zapisana na dysku.")
+            logger.debug("'${file.name}' has been loaded.")
         }.onFailure {
-            logger.error("Błąd podczas zapisu konfiguracji '${file.name}'!", it)
+            logger.error("An error occurred while saving '${file.name}'!", it)
         }
     }
 

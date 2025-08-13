@@ -19,9 +19,9 @@ class PlayerQuitListener(
 
     @EventHandler
     fun handlePlayerQuit(event: PlayerQuitEvent) {
-        this.scope.launch {
-            userManager.handlePlayerQuit(event.player.uniqueId)
-        }
+        userManager.handlePlayerQuit(event.player.uniqueId) //im confused..!>!>!>!>
+//        this.scope.launch {
+//        }
 //        val player = event.player ?: return
 //        val playerUuid = player.uniqueId ?: return
 //

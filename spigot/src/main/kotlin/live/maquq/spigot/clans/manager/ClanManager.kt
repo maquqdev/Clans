@@ -18,11 +18,11 @@ class ClanManager(
     suspend fun getClan(tag: String): Clan? {
         val cachedClan = this.clanCache[tag]
         if (cachedClan != null) {
-            this.logger.debug("Pobrano klan '$tag' z cache'u.")
+            this.logger.debug("Loaded '$tag' from cache.")
             return cachedClan
         }
 
-        this.logger.debug("Brak klanu '$tag' w cache'u. Ładowanie z bazy danych...")
+        this.logger.debug("Cannot find '$tag' in cache, loading from database...")
         val clanFromDb = this.dataSource.loadClan(tag) ?: return null
 
         clanFromDb.init { ownerUuid ->
@@ -30,19 +30,19 @@ class ClanManager(
         }
 
         this.clanCache[tag] = clanFromDb
-        this.logger.debug("Zapisano klan '$tag' w cache'u.")
+        this.logger.debug("Saved clan '$tag' in cache.")
 
         return clanFromDb
     }
 
     suspend fun saveClan(clan: Clan) {
-        this.logger.debug("Zapisywanie klanu ${clan.tag} do bazy danych i cache'u.")
+        this.logger.debug("Saving ${clan.tag} to database and cache...")
         this.dataSource.saveClan(clan)
         this.clanCache[clan.tag] = clan
     }
 
     suspend fun deleteClan(clan: Clan) {
-        this.logger.warn("Usuwanie klanu ${clan.tag} z bazy danych i cache'u.")
+        this.logger.debug("Deleting clan ${clan.tag} from database and cache...")
 
         for (memberUuid in clan.members.keys) {
             val user = dataSource.loadUser(memberUuid)
@@ -57,17 +57,17 @@ class ClanManager(
     }
 
     suspend fun preloadAllClansToCache() {
-        this.logger.info("Wczytywanie wszystkich klanów do cache'u...")
+        this.logger.debug("Loading every clan to cache...")
         val allClans = this.dataSource.getAllClans()
         allClans.forEach { clan ->
             clan.init { ownerUuid -> if (ownerUuid == null) null else this.dataSource.loadUser(ownerUuid) }
             this.clanCache[clan.tag] = clan
         }
-        this.logger.info("Załadowano ${allClans.size} klanów do cache'u.")
+        this.logger.debug("Loaded ${allClans.size} clans to cache.")
     }
 
     fun createNewClan(tag: String, owner: User): Clan {
-        this.logger.info("Tworzenie nowego klanu '$tag' przez gracza ${owner.uuid}")
+        this.logger.debug("Creating clan '$tag' to owner ${owner.uuid}")
         return Clan(
             tag = tag,
             ownerUuid = owner.uuid,

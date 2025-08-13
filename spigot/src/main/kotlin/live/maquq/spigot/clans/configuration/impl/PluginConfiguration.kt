@@ -35,24 +35,11 @@ class MongoSettings : ConfigTemplate {
 }
 
 class ClanSettings : ConfigTemplate {
-    var maxMembers: Int = 20
-    var tagMinLength: Int = 3
-    var tagMaxLength: Int = 5
-    var creationCostItem: ItemStack = ItemStack(Material.NETHER_STAR, 1).apply {
-        itemMeta = itemMeta.also {
-            it.displayName(Component.text("Zakorzeniona Gwiazda", NamedTextColor.LIGHT_PURPLE))
-            it.lore(listOf(
-                Component.text("Przedmiot wymagany do", NamedTextColor.GRAY),
-                Component.text("stworzenia nowego klanu.", NamedTextColor.GRAY)
-            ))
-            it.addEnchant(Enchantment.PROTECTION_FALL, 1, true)
-        }
-    }
+
 }
 
 class MessageSettings : ConfigTemplate {
-    var noPermission: String = "<red>Nie masz uprawnień do wykonania tej komendy."
-    var playerOnlyCommand: String = "<red>Ta komenda może być wykonana tylko przez gracza."
-    var clanCreated: String = "<green>Klan <gold><tag></gold> został pomyślnie stworzony!"
-    var playerJoinedClan: String = "<aqua><player_name></aqua> dołączył do Twojego klanu!"
+    var noPermission: String = "<red>Nie masz uprawnień do wykonania tej komendy. <dark_red>([PERMISSION])"
+    var correctUsage: String = "<red>Poprawne uzycie z komendy: [CORRECT]"
+    var correctUsages: String = "<red>Poprawne uzycie z komendy:"
 }

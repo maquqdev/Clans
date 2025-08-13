@@ -1,5 +1,9 @@
 package live.maquq.spigot.clans.manager
 
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import live.maquq.api.DataSource
 import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
@@ -10,7 +14,8 @@ import java.util.concurrent.ConcurrentHashMap
 class UserManager(
     private val dataSource: DataSource,
     private val clanManager: ClanManager,
-    private val logger: BukkitLogger
+    private val logger: BukkitLogger,
+    private val scope: CoroutineScope
 ) {
 
     private val userCache: MutableMap<UUID, User> = ConcurrentHashMap()
@@ -18,11 +23,11 @@ class UserManager(
     suspend fun getUser(uuid: UUID): User? {
         val cachedUser = this.userCache[uuid]
         if (cachedUser != null) {
-            this.logger.debug("Pobrano użytkownika $uuid z cache'u.")
+            this.logger.debug("Loaded $uuid from cache.")
             return cachedUser
         }
 
-        this.logger.debug("Brak użytkownika $uuid w cache'u. Ładowanie z bazy danych...")
+        this.logger.debug("Can't find $uuid in cache. Loading from database...")
         val userFromDb = this.dataSource.loadUser(uuid) ?: return null
 
         userFromDb.init { clanTag ->
@@ -30,30 +35,41 @@ class UserManager(
         }
 
         this.userCache[uuid] = userFromDb
-        this.logger.debug("Zapisano użytkownika $uuid w cache'u.")
+        this.logger.debug("Saved user $uuid in cache.")
 
         return userFromDb
     }
 
     suspend fun saveUser(user: User) {
-        this.logger.debug("Zapisywanie użytkownika ${user.uuid} do bazy danych i cache'u.")
+        this.logger.debug("Saved user ${user.uuid} to database and cache")
         this.dataSource.saveUser(user)
         this.userCache[user.uuid] = user
     }
 
     suspend fun removeUser(user: User) {
-        this.logger.info("Usuwanie użytkownika ${user.uuid} z bazy danych i cache'u.")
+        this.logger.debug("Deleted ${user.uuid} from database and cache.")
         this.dataSource.removeUser(user)
         this.userCache.remove(user.uuid)
     }
 
     fun handlePlayerQuit(uuid: UUID) {
-        this.userCache.remove(uuid)
-        this.logger.debug("Usunięto użytkownika $uuid z cache'u po wyjściu z serwera.")
+        scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
+            logger.error("Failed to save user data for player ${uuid}: ${exception.message}")
+            exception.printStackTrace()
+        }) {
+            try {
+                val user = getUser(uuid)
+                if (user != null)
+                    saveUser(user)
+            } catch (exception: Exception) {
+                logger.error("Unexpected error saving user data for ${uuid}: ${exception.message}")
+            }
+        }
+        this.logger.debug("Removed $uuid from cache and saved.")
     }
 
     fun createNewUser(player: Player): User {
-        this.logger.info("Tworzenie nowego profilu dla gracza: ${player.name} (${player.uniqueId})")
+        this.logger.debug("Creating a new user for player: ${player.name} (${player.uniqueId})")
         return User(uuid = player.uniqueId)
     }
 }
