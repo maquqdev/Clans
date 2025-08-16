@@ -58,7 +58,8 @@ class BukkitLogger(
     }
 
     fun shutdown() {
-        logChannel.close(); job.cancel()
+        logChannel.close()
+        job.cancel()
     }
 
     private fun log(level: Level, message: String, throwable: Throwable? = null) {
@@ -92,7 +93,7 @@ class BukkitLogger(
             } catch (exception: Exception) {
                 plugin.logger.log(
                     Level.SEVERE,
-                    "Krytyczny błąd zapisu do pliku logu! Zapis do pliku zostaje wyłączony.",
+                    "Critical error writing to log file! Logging to file is disabled.",
                     exception
                 )
                 logChannel.close()

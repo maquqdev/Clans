@@ -27,15 +27,20 @@ class ClansPlugin : JavaPlugin() {
     /*
             TODO
         * Komendy:
-            * /klan stworz <name>
-            * /klan dolacz <name>
-            * /klan opusc
-            * /klan info <klan>
-            * /klan usun [potwierdz]
-            * /klan ustawienia
-            * /klan ulepsz
+            * /klan stworz <name> //DONE
+            * /klan dolacz <name> //DONE
+            * /klan opusc //DONE
+            * /klanw wyrzuc <name>
+            * /klan info <klan> //TODO
+            * /klan usun [potwierdz] //TODO
+
+            * /klan ustawienia //TODO NEXT UP[DATE
+            * /klan ulepsz //TODO NEXT UPDATE
        Kilka systemów punktów
        Title po zabójstwie
+       System commentów w cfg
+       Wpierdolic wszystko do configu (komendy)
+       Handlowanie permisji w ClanManager -- invitePlayer
 
        ehhh zas te not null safety kod... po co ten kotlin???????
      */
@@ -56,6 +61,7 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var clanManager: ClanManager
 
     override fun onEnable() {
+        val startTime = System.currentTimeMillis()
         this.logger.info(
             """\n
              ／l、         
@@ -64,6 +70,7 @@ class ClansPlugin : JavaPlugin() {
             じしf_, )ノ         maquq @ 2025
         """.trimIndent()
         )
+
         this.miniText = MiniText.builder()
             .enableFormatter(FormatterType.LEGACY, FormatterType.NAMED_COLORS, FormatterType.HEX, FormatterType.NEW_LINES, FormatterType.DECORATIONS)
             .build()
@@ -77,7 +84,7 @@ class ClansPlugin : JavaPlugin() {
         this.dataSource = initializeDataSource(mainConfig.get)
 
         if (!this.setupDataSource()) {
-            this.logger.error("Connection to database failed. Change database login credentials :)")
+            this.logger.error("Connection to database failed. Change database login credentials or use FLAT :)")
             this.server.pluginManager.disablePlugin(this)
             return
         }
@@ -88,7 +95,7 @@ class ClansPlugin : JavaPlugin() {
         this.loadClansToCache()
         this.loadCommands()
 
-        this.logger.info("Plugin has been successfully loaded!")
+        this.logger.info("Plugin has been successfully loaded in ${System.currentTimeMillis() - startTime}ms!")
     }
 
     override fun onDisable() {
@@ -127,19 +134,21 @@ class ClansPlugin : JavaPlugin() {
     }
 
     private fun loadClansToCache() {
-        scope.launch { clanManager.preloadAllClansToCache() }
+        this.scope.launch { clanManager.preloadAllClansToCache() }
     }
 
     private fun setupManagers() {
         this.clanManager = ClanManager(
             this.dataSource,
+            this.mainConfig.get,
             this.logger
         )
+        
         this.userManager = UserManager(
             this.dataSource,
             this.clanManager,
             this.logger,
-            scope
+            this.scope
         )
     }
 
@@ -158,7 +167,14 @@ class ClansPlugin : JavaPlugin() {
                 )
             )
             .commands(
-                ClanCommand()
+                ClanCommand(
+                    this.miniText,
+                    this.mainConfig.get,
+                    this.scope,
+
+                    this.clanManager,
+                    this.userManager
+                )
             )
             .build()
     }

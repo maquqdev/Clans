@@ -20,7 +20,7 @@ class UserManager(
 
     private val userCache: MutableMap<UUID, User> = ConcurrentHashMap()
 
-    suspend fun getUser(uuid: UUID): User? {
+    suspend fun getUser(uuid: UUID): User {
         val cachedUser = this.userCache[uuid]
         if (cachedUser != null) {
             this.logger.debug("Loaded $uuid from cache.")
@@ -28,7 +28,7 @@ class UserManager(
         }
 
         this.logger.debug("Can't find $uuid in cache. Loading from database...")
-        val userFromDb = this.dataSource.loadUser(uuid) ?: return null
+        val userFromDb = this.dataSource.loadUser(uuid) ?: createNewUser(uuid)
 
         userFromDb.init { clanTag ->
             if (clanTag == null) null else this.clanManager.getClan(clanTag)
@@ -71,5 +71,10 @@ class UserManager(
     fun createNewUser(player: Player): User {
         this.logger.debug("Creating a new user for player: ${player.name} (${player.uniqueId})")
         return User(uuid = player.uniqueId)
+    }
+
+    fun createNewUser(uuid: UUID): User {
+        this.logger.debug("Creating a new user for player: $uuid")
+        return User(uuid = uuid)
     }
 }

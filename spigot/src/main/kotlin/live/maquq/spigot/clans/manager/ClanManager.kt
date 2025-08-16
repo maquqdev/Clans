@@ -6,14 +6,21 @@ import live.maquq.api.clan.Clan
 import live.maquq.api.clan.ClanRole
 import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
+import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
+import live.maquq.spigot.clans.manager.module.ClanInvite
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
 
 class ClanManager(
     private val dataSource: DataSource,
+    private val mainConfig: PluginConfiguration,
     private val logger: BukkitLogger
 ) {
 
     private val clanCache: MutableMap<String, Clan> = ConcurrentHashMap()
+
+    private val pendingInvites: MutableMap<UUID, ClanInvite> = ConcurrentHashMap()
 
     suspend fun getClan(tag: String): Clan? {
         val cachedClan = this.clanCache[tag]
@@ -73,5 +80,50 @@ class ClanManager(
             ownerUuid = owner.uuid,
             members = mutableMapOf(owner.uuid to ClanRole.LEADER)
         )
+    }
+
+    suspend fun invitePlayer(inviter: User, target: User, clan: Clan) {
+        // TODO: Validation if player has permission to invite the player
+
+//        if (target.clanTag != null) {
+//            return
+//        }
+
+        val invite = ClanInvite(clan.tag, inviter.uuid)
+        this.pendingInvites[target.uuid] = invite
+        this.logger.info("Gracz ${inviter.uuid} zaprosił ${target.uuid} do klanu ${clan.tag}")
+    }
+
+    suspend fun acceptInvite(joiningUser: User): Boolean {
+        val invite = this.pendingInvites[joiningUser.uuid] ?: return false
+
+        val inviteAgeSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - invite.timestamp)
+        if (inviteAgeSeconds > this.mainConfig.clanSettings.timeToTimeoutInvite) {
+            this.pendingInvites.remove(joiningUser.uuid)
+            return false
+        }
+
+        val clan = this.getClan(invite.clanTag) ?: return false
+
+        clan.members[joiningUser.uuid] = ClanRole.MEMBER
+        this.saveClan(clan)
+
+        val updatedUser = joiningUser.copy(clanTag = clan.tag)
+        this.dataSource.saveUser(updatedUser)
+
+        this.pendingInvites.remove(joiningUser.uuid)
+
+        this.logger.info("Gracz ${joiningUser.uuid} dołączył do klanu ${clan.tag}")
+        return true
+    }
+
+    //irrelevant tbh
+//    fun denyInvite(playerUuid: UUID): Boolean {
+//        return this.pendingInvites.remove(playerUuid) != null
+//    }
+
+
+    fun getAllClans(): List<Clan> {
+        return this.clanCache.values.toList()
     }
 }
