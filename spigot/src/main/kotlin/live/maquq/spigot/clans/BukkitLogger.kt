@@ -35,9 +35,9 @@ class BukkitLogger(
     private var currentLogFile: File? = null
 
     init {
-        if (!logFolder.exists()) {
+        if (!logFolder.exists())
             logFolder.mkdirs()
-        }
+
         startFileWriter()
     }
 

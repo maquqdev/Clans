@@ -46,11 +46,11 @@ class VersionChecker(
 
     private fun logUpdateMessage(local: String, remote: String, changelog: String) {
         logger.warn(" ")
-        logger.warn("<gold> /\\_/\\  <gray>Clans - Dostępna nowa aktualizacja!</gold>")
-        logger.warn("<gold>( o.o )</gold> Twoja wersja (<red>$local</red>) jest przestarzała!")
-        logger.warn("<gold> > ^ < </gold> Nowa wersja: <green>$remote</green>")
-        logger.info("         <aqua>Zmiany: $changelog")
-        logger.warn("<gold>        Pobierz ją z: https://github.com/maquqdev/Clans/releases/latest")
+        logger.warn("<gold> /\\_/\\   <gray>Clans - New update available!</gold>")
+        logger.warn("<gold>( o.o )</gold> Your version (<red>$local</red>)!")
+        logger.warn("<gold> > ^ < </gold> New version: <green>$remote</green>")
+        logger.info("<aqua>      Changes: $changelog")
+        logger.warn("<gold>      Download new version from: https://github.com/maquqdev/Clans/releases/latest")
         logger.warn(" ")
     }
 }

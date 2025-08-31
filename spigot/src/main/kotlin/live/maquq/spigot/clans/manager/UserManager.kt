@@ -7,15 +7,17 @@ import kotlinx.coroutines.launch
 import live.maquq.api.DataSource
 import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
+import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
+import net.kyori.adventure.text.BlockNBTComponent
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class UserManager(
     private val dataSource: DataSource,
-    private val clanManager: ClanManager,
     private val logger: BukkitLogger,
-    private val scope: CoroutineScope
+    private val scope: CoroutineScope,
+    private val mainConfig: PluginConfiguration
 ) {
 
     private val userCache: MutableMap<UUID, User> = ConcurrentHashMap()
@@ -28,11 +30,7 @@ class UserManager(
         }
 
         this.logger.debug("Can't find $uuid in cache. Loading from database...")
-        val userFromDb = this.dataSource.loadUser(uuid) ?: createNewUser(uuid)
-
-//        userFromDb.init { clanTag ->
-//            if (clanTag == null) null else this.clanManager.getClan(clanTag)
-//        }
+        val userFromDb = this.dataSource.loadUser(uuid) ?: createNewUser(uuid, mainConfig.clanSettings.defaultPoints)
 
         this.userCache[uuid] = userFromDb
         this.logger.debug("Saved user $uuid in cache.")
@@ -67,13 +65,19 @@ class UserManager(
         this.logger.debug("Removed $uuid from cache and saved.")
     }
 
-    fun createNewUser(player: Player): User {
+    fun createNewUser(player: Player, defaultPoints: Int): User {
         this.logger.debug("Creating a new user for player: ${player.name} (${player.uniqueId})")
-        return User(uuid = player.uniqueId)
+        return User(
+            uuid = player.uniqueId,
+            points = defaultPoints,
+        )
     }
 
-    fun createNewUser(uuid: UUID): User {
+    fun createNewUser(uuid: UUID, defaultPoints: Int): User {
         this.logger.debug("Creating a new user for player: $uuid")
-        return User(uuid = uuid)
+        return User(
+            uuid = uuid,
+            points = defaultPoints
+        )
     }
 }

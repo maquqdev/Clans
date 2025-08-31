@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit
 
 class ClanManager(
     private val dataSource: DataSource,
+    private val userManager: UserManager,
     private val mainConfig: PluginConfiguration,
     private val logger: BukkitLogger
 ) {
@@ -81,7 +82,8 @@ class ClanManager(
         return Clan(
             tag = tag,
             ownerUuid = owner.uuid,
-            members = mutableMapOf(owner.uuid to ClanRole.LEADER)
+            members = mutableMapOf(owner.uuid to ClanRole.LEADER),
+            maxSize = 3 //TODO
         )
     }
 
@@ -110,7 +112,7 @@ class ClanManager(
         this.saveClan(clan)
 
         val updatedUser = joiningUser.copy(clanTag = clan.tag)
-        this.dataSource.saveUser(updatedUser)
+        this.userManager.saveUser(updatedUser)
 
         this.pendingInvites.remove(joiningUser.uuid)
 

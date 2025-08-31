@@ -1,4 +1,4 @@
-package live.maquq.spigot.clans.api.listener
+package live.maquq.spigot.clans.gui.listener
 
 import live.maquq.spigot.clans.gui.internal.InventoryImpl
 import live.maquq.spigot.clans.gui.manager.InventoryManager

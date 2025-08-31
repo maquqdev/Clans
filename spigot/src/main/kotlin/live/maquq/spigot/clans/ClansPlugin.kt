@@ -7,6 +7,7 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
 import live.maquq.api.DataSource
 import live.maquq.spigot.clans.commands.ClanCommand
+import live.maquq.spigot.clans.commands.PlayerCommand
 import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
 import live.maquq.spigot.clans.commands.handler.InvalidUsageHandler
 import live.maquq.spigot.clans.configuration.Config
@@ -27,11 +28,8 @@ class ClansPlugin : JavaPlugin() {
     /*
             TODO
         * Komendy:
-            * /klan stworz <name> //DONE
-            * /klan dolacz <name> //DONE
             * /klan opusc //DONE
             * /klanw wyrzuc <name>
-            * /klan info <klan> //TODO
             * /klan usun [potwierdz] //TODO -- nie do konca
 
             * /klan ustawienia //TODO NEXT UP[DATE
@@ -39,8 +37,12 @@ class ClansPlugin : JavaPlugin() {
        Kilka systemów punktów
        Title po zabójstwie
        System commentów w cfg
-       Wpierdolic wszystko do configu (komendy)
+       Wpierdolic wszystko do configu (komendy) //done
        Handlowanie permisji w ClanManager -- invitePlayer
+       Shift + RPM = userInfo --- PlayerCommand.kt:
+        wydzielić to na funkcje aby użyć w ...InteractionListener
+        Clan home
+
 
        VaultUnlocked hook żeby robić upgrade size klanu
        Możliwość knockowania klanowiczów bez dmg?
@@ -87,7 +89,10 @@ class ClansPlugin : JavaPlugin() {
 
         this.mainConfig = Config(
             PluginConfiguration::class.java,
-            File(this.dataFolder, "config.yml"),
+            File(
+                this.dataFolder,
+                "config.yml"
+            ),
             this.logger
         )
 
@@ -101,6 +106,11 @@ class ClansPlugin : JavaPlugin() {
 
         this.setupManagers()
         this.registerIntegrations()
+        VersionChecker(
+            this,
+            logger,
+            scope
+        ).check()
 
         this.loadClansToCache()
         this.loadCommands()
@@ -148,17 +158,18 @@ class ClansPlugin : JavaPlugin() {
     }
 
     private fun setupManagers() {
-        this.clanManager = ClanManager(
-            this.dataSource,
-            this.mainConfig.get,
-            this.logger
-        )
-        
         this.userManager = UserManager(
             this.dataSource,
-            this.clanManager,
             this.logger,
-            this.scope
+            this.scope,
+            this.mainConfig.get
+        )
+
+        this.clanManager = ClanManager(
+            this.dataSource,
+            this.userManager,
+            this.mainConfig.get,
+            this.logger
         )
     }
 
@@ -178,12 +189,17 @@ class ClansPlugin : JavaPlugin() {
             )
             .commands(
                 ClanCommand(
-                    this.miniText,
-                    this.mainConfig.get,
-                    this.scope,
-
-                    this.clanManager,
-                    this.userManager
+                    miniText =this.miniText,
+                    mainConfig = this.mainConfig.get,
+                    scope =this.scope,
+                    clanManager = this.clanManager,
+                    userManager = this.userManager
+                ),
+                PlayerCommand(
+                    miniText = this.miniText,
+                    scope = this.scope,
+                    mainConfig = this.mainConfig.get,
+                    userManager = this.userManager
                 )
             )
             .build()

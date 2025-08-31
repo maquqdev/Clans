@@ -1,6 +1,6 @@
 package live.maquq.spigot.clans.gui.manager
 
-import live.maquq.spigot.clans.api.listener.InventoryListener
+import live.maquq.spigot.clans.gui.listener.InventoryListener
 import live.maquq.spigot.clans.gui.api.InteractiveInventory
 import live.maquq.spigot.clans.gui.internal.InventoryImpl
 import net.kyori.adventure.text.Component
