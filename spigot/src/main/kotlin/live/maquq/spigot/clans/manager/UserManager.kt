@@ -30,9 +30,9 @@ class UserManager(
         this.logger.debug("Can't find $uuid in cache. Loading from database...")
         val userFromDb = this.dataSource.loadUser(uuid) ?: createNewUser(uuid)
 
-        userFromDb.init { clanTag ->
-            if (clanTag == null) null else this.clanManager.getClan(clanTag)
-        }
+//        userFromDb.init { clanTag ->
+//            if (clanTag == null) null else this.clanManager.getClan(clanTag)
+//        }
 
         this.userCache[uuid] = userFromDb
         this.logger.debug("Saved user $uuid in cache.")
@@ -59,8 +59,7 @@ class UserManager(
         }) {
             try {
                 val user = getUser(uuid)
-                if (user != null)
-                    saveUser(user)
+                saveUser(user)
             } catch (exception: Exception) {
                 logger.error("Unexpected error saving user data for ${uuid}: ${exception.message}")
             }

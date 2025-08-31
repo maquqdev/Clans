@@ -32,7 +32,7 @@ class ClansPlugin : JavaPlugin() {
             * /klan opusc //DONE
             * /klanw wyrzuc <name>
             * /klan info <klan> //TODO
-            * /klan usun [potwierdz] //TODO
+            * /klan usun [potwierdz] //TODO -- nie do konca
 
             * /klan ustawienia //TODO NEXT UP[DATE
             * /klan ulepsz //TODO NEXT UPDATE
@@ -41,6 +41,9 @@ class ClansPlugin : JavaPlugin() {
        System commentów w cfg
        Wpierdolic wszystko do configu (komendy)
        Handlowanie permisji w ClanManager -- invitePlayer
+
+       VaultUnlocked hook żeby robić upgrade size klanu
+       Możliwość knockowania klanowiczów bez dmg?
 
        ehhh zas te not null safety kod... po co ten kotlin???????
      */
@@ -72,7 +75,14 @@ class ClansPlugin : JavaPlugin() {
         )
 
         this.miniText = MiniText.builder()
-            .enableFormatter(FormatterType.LEGACY, FormatterType.NAMED_COLORS, FormatterType.HEX, FormatterType.NEW_LINES, FormatterType.DECORATIONS)
+            .enableFormatter(
+                FormatterType.LEGACY,
+                FormatterType.NAMED_COLORS,
+                FormatterType.HEX,
+                FormatterType.NEW_LINES,
+                FormatterType.DECORATIONS,
+                FormatterType.RESET
+            )
             .build()
 
         this.mainConfig = Config(

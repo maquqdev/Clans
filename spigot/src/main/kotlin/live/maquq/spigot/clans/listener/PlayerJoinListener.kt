@@ -16,7 +16,7 @@ class PlayerJoinListener(
         val player = event.player
 
         this.scope.launch {
-            userManager.getUser(player.uniqueId) ?: userManager.createNewUser(player)
+            userManager.getUser(player.uniqueId)
         }
     }
 }

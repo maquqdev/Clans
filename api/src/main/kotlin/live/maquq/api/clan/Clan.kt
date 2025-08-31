@@ -14,7 +14,8 @@ enum class ClanRole {
 data class Clan(
     @BsonId val tag: String,
     var ownerUuid: UUID,
-    var members: MutableMap<UUID, ClanRole>
+    var members: MutableMap<UUID, ClanRole>,
+    var size: Int
 ) {
     @Transient
     private lateinit var ownerLoader: suspend (UUID?) -> User?

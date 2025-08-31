@@ -1,6 +1,9 @@
 package live.maquq.spigot.clans.manager
 
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import live.maquq.api.DataSource
 import live.maquq.api.clan.Clan
 import live.maquq.api.clan.ClanRole
@@ -83,8 +86,6 @@ class ClanManager(
     }
 
     suspend fun invitePlayer(inviter: User, target: User, clan: Clan) {
-        // TODO: Validation if player has permission to invite the player
-
 //        if (target.clanTag != null) {
 //            return
 //        }
@@ -113,15 +114,27 @@ class ClanManager(
 
         this.pendingInvites.remove(joiningUser.uuid)
 
-        this.logger.info("Gracz ${joiningUser.uuid} dołączył do klanu ${clan.tag}")
+        this.logger.debug("Gracz ${joiningUser.uuid} dołączył do klanu ${clan.tag}")
         return true
     }
 
-    //irrelevant tbh
-//    fun denyInvite(playerUuid: UUID): Boolean {
-//        return this.pendingInvites.remove(playerUuid) != null
-//    }
+    suspend fun averagePoints(clan: Clan, userManager: UserManager): Int {
+        if (clan.members.isEmpty()) {
+            return 500
+        }
 
+        val totalPoints = coroutineScope {
+            val usersPoints = clan.members.map { member ->
+                async {
+                    userManager.getUser(member.key).points
+                }
+            }
+
+            usersPoints.awaitAll().sum()
+        }
+
+        return totalPoints / clan.members.size
+    }
 
     fun getAllClans(): List<Clan> {
         return this.clanCache.values.toList()

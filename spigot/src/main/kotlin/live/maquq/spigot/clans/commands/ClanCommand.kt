@@ -6,11 +6,15 @@ import dev.rollczi.litecommands.annotations.command.Command
 import dev.rollczi.litecommands.annotations.context.Context
 import dev.rollczi.litecommands.annotations.execute.Execute
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import live.maquq.api.clan.ClanRole
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 
 @Command(name = "clan")
@@ -26,9 +30,9 @@ class ClanCommand(
     @Execute(name = "create")
     fun execute(
         @Context player: Player,
-        @Arg tag: String
+        @Arg("tag") tag: String
     ) {
-        this.scope.launch {
+        scope.launch {
             if (clanManager.getClan(tag) != null) {
                 val translated = miniText.deserialize(mainConfig.messages.clanAlreadyExists).component()
                 player.sendMessage(translated)
@@ -38,8 +42,8 @@ class ClanCommand(
             val user = userManager.getUser(player.uniqueId)
 
             if (user.clanTag != null) {
-                val message = miniText.deserialize(mainConfig.messages.alreadyInClan).component()
-                player.sendMessage(message)
+                val translated = miniText.deserialize(mainConfig.messages.alreadyInClan).component()
+                player.sendMessage(translated)
                 return@launch
             }
 
@@ -47,10 +51,6 @@ class ClanCommand(
             clanManager.saveClan(newClan)
 
             val updatedUser = user.copy(clanTag = tag)
-            updatedUser.init { newClanTag ->
-                if (newClanTag == null) null else clanManager.getClan(newClanTag)
-            }
-
             userManager.saveUser(updatedUser)
 
             val translated = miniText.deserialize(mainConfig.messages.createdClan).component()
@@ -58,17 +58,34 @@ class ClanCommand(
         }
     }
 
+    @Execute(name = "debug")
+    fun debug(@Context player: Player) {
+        this.scope.launch {
+            val user = userManager.getUser(player.uniqueId)
+
+            println("informacje o ${player.name}!!!")
+            if(user.clanTag != null)
+                println("ma klan ${user.clanTag}")
+            else
+                println("nie ma klanu")
+            println(user.kills)
+            println(user.deaths)
+        }
+    }
+
+
+
     @Execute(name = "zapros")
     fun inviteCommand(
         @Context player: Player,
-        @Arg targetPlayer: Player
+        @Arg("gracz") targetPlayer: Player
     ) {
-        this.scope.launch {
-            val inviter = userManager.getUser(player.uniqueId) ?: return@launch
-            val targetUser = userManager.getUser(targetPlayer.uniqueId) ?: return@launch
+        scope.launch {
+            val inviterUser = userManager.getUser(player.uniqueId)
+            val targetUser = userManager.getUser(targetPlayer.uniqueId)
 
-            val clan = inviter.clan
-            if (clan == null) {
+            val inviterClanTag = inviterUser.clanTag
+            if (inviterClanTag == null) {
                 val translated = miniText.deserialize(mainConfig.messages.notInAnyClan).component()
                 player.sendMessage(translated)
                 return@launch
@@ -80,19 +97,64 @@ class ClanCommand(
                 return@launch
             }
 
-            clanManager.invitePlayer(inviter, targetUser, clan)
+            val inviterClan = clanManager.getClan(inviterClanTag) ?: run {
+                val translated = miniText.deserialize(mainConfig.messages.notInAnyClan).component()
+                player.sendMessage(translated)
+                return@launch
+            }
 
-            val translatedMsgToInviter = miniText.deserialize(mainConfig.messages.msgToInviter).component()
-            player.sendMessage(translatedMsgToInviter)
+            if(inviterClan.members.size )
 
-            val translatedMsgToTarget = miniText.deserialize(
-                mainConfig.messages.invitedToClan
-                    .replace("[CLAN-TAG]", clan.tag)
-                    .replace("[INVITER]", player.name)
+            val inviterRole = inviterClan.members[inviterUser.uuid]
+            if (inviterRole == null || (inviterRole != ClanRole.LEADER && inviterRole != ClanRole.VLEADER)) {
+                val translated = miniText.deserialize(mainConfig.messages.cantInvite)
+                return@launch
+            }
+
+            clanManager.invitePlayer(inviterUser, targetUser, inviterClan)
+
+            val translated = miniText.deserialize(mainConfig.messages.msgToInviter).component()
+            player.sendMessage(translated)
+
+            val translatedToTarget = miniText.deserialize(mainConfig.messages.invitedToClan
+                .replace("[CLAN-TAG]", inviterClanTag)
+                .replace("[INVITER]", player.name)
             ).component()
-            targetPlayer.sendMessage(translatedMsgToTarget)
+            targetPlayer.sendMessage(translatedToTarget)
         }
     }
+
+    @Execute(name = "info")
+    fun infoExecute(
+        @Context player: Player,
+        @Arg("tag") tag: String
+    ) {
+        this.scope.launch {
+            val clan = clanManager.getClan(tag)
+            if(clan == null) {
+                val translated = miniText.deserialize(mainConfig.messages.clanNotFound).component()
+                player.sendMessage(translated)
+                return@launch
+            }
+
+            val membersString = withContext(Dispatchers.IO) {
+                clan.members.keys
+                    .mapNotNull { uuid -> Bukkit.getOfflinePlayer(uuid).name }
+                    .joinToString(mainConfig.clanSettings.separator)
+            }
+
+            val averagePoints = clanManager.averagePoints(clan, userManager)
+
+            val translated = miniText.deserialize(
+                mainConfig.messages.clanInfo
+                    .replace("[TAG]", tag)
+                    .replace("[MEMBERS]", membersString)
+                    .replace("[POINTS]", averagePoints.toString())
+            ).component()
+            player.sendMessage(translated)
+        }
+    }
+
 
     @Execute(name = "join")
     fun joinCommand(
@@ -103,15 +165,15 @@ class ClanCommand(
             val user = userManager.getUser(player.uniqueId) ?: return@launch
 
             if (user.clanTag != null) {
-                player.sendMessage(miniText.deserialize("<red>Jesteś już w klanie!").component())
+                player.sendMessage(miniText.deserialize("[red]Jesteś już w klanie!").component())
                 return@launch
             }
 
             val success = clanManager.acceptInvite(user)
             if (success) {
-                player.sendMessage(miniText.deserialize("<green>Pomyślnie dołączono do klanu!").component())
+                player.sendMessage(miniText.deserialize("[green]Pomyślnie dołączono do klanu!").component())
             } else {
-                player.sendMessage(miniText.deserialize("<red>Nie masz żadnych oczekujących zaproszeń lub zaproszenie wygasło.").component())
+                player.sendMessage(miniText.deserialize("[red]Nie masz żadnych oczekujących zaproszeń lub zaproszenie wygasło.").component())
             }
         }
     }
