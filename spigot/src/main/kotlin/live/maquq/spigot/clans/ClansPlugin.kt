@@ -6,16 +6,23 @@ import dev.rollczi.litecommands.LiteCommands
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
 import live.maquq.api.DataSource
+import live.maquq.api.Points
 import live.maquq.spigot.clans.commands.ClanCommand
 import live.maquq.spigot.clans.commands.PlayerCommand
 import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
 import live.maquq.spigot.clans.commands.handler.InvalidUsageHandler
 import live.maquq.spigot.clans.configuration.Config
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
+import live.maquq.spigot.clans.configuration.impl.PointsType
 import live.maquq.spigot.clans.configuration.impl.StorageType
+import live.maquq.spigot.clans.listener.PlayerDeathListener
 import live.maquq.spigot.clans.listener.PlayerJoinListener
-import live.maquq.spigot.clans.manager.ClanManager
+import live.maquq.spigot.clans.listener.PlayerQuitListener
+import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.manager.points.PointsManager
+import live.maquq.spigot.clans.manager.points.impl.CompositePoints
+import live.maquq.spigot.clans.manager.points.impl.SkillBasedPoints
 import live.maquq.storage.impl.FlatDataSource
 import live.maquq.storage.impl.MongoDataSource
 import live.maquq.storage.impl.MySqlDataSource
@@ -31,17 +38,19 @@ class ClansPlugin : JavaPlugin() {
             * /klan opusc //DONE
             * /klanw wyrzuc <name>
             * /klan usun [potwierdz] //TODO -- nie do konca
+            * /klan zastepca <name>
 
             * /klan ustawienia //TODO NEXT UP[DATE
             * /klan ulepsz //TODO NEXT UPDATE
-       Kilka systemów punktów
-       Title po zabójstwie
+       Kilka systemów punktów // done
+       Title po zabójstwie + broadcast //done
        System commentów w cfg
        Wpierdolic wszystko do configu (komendy) //done
        Handlowanie permisji w ClanManager -- invitePlayer
        Shift + RPM = userInfo --- PlayerCommand.kt:
         wydzielić to na funkcje aby użyć w ...InteractionListener
         Clan home
+       Załadować dana il. użytkowników do topki (np. top 50)
 
 
        VaultUnlocked hook żeby robić upgrade size klanu
@@ -53,17 +62,23 @@ class ClansPlugin : JavaPlugin() {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(Dispatchers.Default + this.job)
 
-    private val logger: BukkitLogger = BukkitLogger(this, true) //TODO: Get debug mode from config, don't hardcode
+    private val logger: BukkitLogger = BukkitLogger(
+        this,
+        true
+    )
 
     private lateinit var miniText: MiniText
 
     private lateinit var dataSource: DataSource
+    private lateinit var points: Points
+
     private lateinit var mainConfig: Config<PluginConfiguration>
 
     private lateinit var liteCommands: LiteCommands<CommandSender>
 
     private lateinit var userManager: UserManager
     private lateinit var clanManager: ClanManager
+    private lateinit var pointsManager: PointsManager
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
@@ -97,6 +112,7 @@ class ClansPlugin : JavaPlugin() {
         )
 
         this.dataSource = initializeDataSource(mainConfig.get)
+        this.points = initializePoints(mainConfig.get)
 
         if (!this.setupDataSource()) {
             this.logger.error("Connection to database failed. Change database login credentials or use FLAT :)")
@@ -105,7 +121,7 @@ class ClansPlugin : JavaPlugin() {
         }
 
         this.setupManagers()
-        this.registerIntegrations()
+        this.registerListeners()
         VersionChecker(
             this,
             logger,
@@ -144,6 +160,13 @@ class ClansPlugin : JavaPlugin() {
         }
     }
 
+    private fun initializePoints(mainConfig: PluginConfiguration): Points {
+        return when (mainConfig.clanSettings.pointsConfiguration.pointsType) {
+            PointsType.COMPOSITE -> CompositePoints(mainConfig.clanSettings.proportionalPointsConfiguration)
+            PointsType.SKILL_BASED -> SkillBasedPoints(mainConfig.clanSettings.skillBasedPointsConfiguration)
+        }
+    }
+
     private fun setupDataSource(): Boolean {
         return runCatching {
             this.dataSource.connect()
@@ -171,6 +194,10 @@ class ClansPlugin : JavaPlugin() {
             this.mainConfig.get,
             this.logger
         )
+
+        this.pointsManager = PointsManager(
+            points
+        )
     }
 
     private fun loadCommands() {
@@ -189,9 +216,9 @@ class ClansPlugin : JavaPlugin() {
             )
             .commands(
                 ClanCommand(
-                    miniText =this.miniText,
+                    miniText = this.miniText,
                     mainConfig = this.mainConfig.get,
-                    scope =this.scope,
+                    scope = this.scope,
                     clanManager = this.clanManager,
                     userManager = this.userManager
                 ),
@@ -205,13 +232,25 @@ class ClansPlugin : JavaPlugin() {
             .build()
     }
 
-    private fun registerIntegrations() {
+    private fun registerListeners() {
         val pluginManager = this.server.pluginManager
 
         val playerJoinListener = PlayerJoinListener(
             this.userManager,
             this.scope
         )
+        val playerQuitListener = PlayerQuitListener(
+            this.userManager
+        )
+        val playerDeathListener = PlayerDeathListener(
+            this.scope,
+            this.miniText,
+            this.mainConfig.get.messages.playerDeath,
+            this.pointsManager,
+            this.userManager
+        )
         pluginManager.registerEvents(playerJoinListener, this)
+        pluginManager.registerEvents(playerQuitListener, this)
+        pluginManager.registerEvents(playerDeathListener, this)
     }
 }

@@ -170,7 +170,7 @@ class MySqlDataSource(private val settings: Map<String, Any?>) : DataSource {
                 }
                 membersMap
             }
-            Clan(clanData.first, clanData.second, members, 3) //TODO change default size
+            Clan(clanData.first, clanData.second, members, 3, 1.0) //TODO change default size
         }
     } catch (exception: Exception) {
         throw RuntimeException("Failed to load clan with tag: $tag", exception)

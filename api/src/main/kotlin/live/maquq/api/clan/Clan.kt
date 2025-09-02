@@ -7,23 +7,14 @@ import java.util.*
 
 enum class ClanRole {
     LEADER,
-    VLEADER,
+    COLEADER,
     MEMBER
 }
 
 data class Clan(
-    @BsonId val tag: String,
+    @param:BsonId val tag: String,
     var ownerUuid: UUID,
     var members: MutableMap<UUID, ClanRole>,
-    var maxSize: Int
-) {
-    @Transient
-    private lateinit var ownerLoader: suspend (UUID?) -> User?
-
-    @delegate:Transient
-    val owner: User? by LazyReference { ownerLoader(ownerUuid) }
-
-    fun init(ownerLoader: suspend (UUID?) -> User?) {
-        this.ownerLoader = ownerLoader
-    }
-}
+    var maxSize: Int,
+    var pointsMultiplier: Double
+)

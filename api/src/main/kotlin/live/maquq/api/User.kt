@@ -10,14 +10,4 @@ data class User(
     var deaths: Int = 0,
     var points: Int,
     var clanTag: String? = null
-) {
-    @Transient
-    private lateinit var clanLoader: suspend (String?) -> Clan?
-
-    @delegate:Transient
-    val clan: Clan? by LazyReference { clanLoader(clanTag) }
-
-    fun init(clanLoader: suspend (String?) -> Clan?) {
-        this.clanLoader = clanLoader
-    }
-}
+)

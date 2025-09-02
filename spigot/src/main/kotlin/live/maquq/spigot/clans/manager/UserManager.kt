@@ -62,7 +62,7 @@ class UserManager(
                 logger.error("Unexpected error saving user data for ${uuid}: ${exception.message}")
             }
         }
-        this.logger.debug("Removed $uuid from cache and saved.")
+        this.logger.debug("Saved $uuid.")
     }
 
     fun createNewUser(player: Player, defaultPoints: Int): User {

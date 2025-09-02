@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.manager.clan.ClanManager
 import org.bukkit.entity.Player
 
 @Command(name = "gracz")
@@ -38,6 +39,7 @@ class PlayerCommand(
                     .replace("[POINTS]", points.toString())
                     .replace("[DEATHS]", deaths.toString())
                     .replace("[KILLS]", kills.toString())
+                    .replace("[COLEADER]", "")
                     .replace("[KD]", kdFormatted)
 
                 miniText.deserialize(message).component().let {

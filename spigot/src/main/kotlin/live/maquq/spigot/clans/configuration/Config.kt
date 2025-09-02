@@ -37,9 +37,8 @@ class Config<T : ConfigTemplate>(
     }
 
     private fun loadFromFile() {
-        if (!file.parentFile.exists()) {
+        if (!file.parentFile.exists())
             file.parentFile.mkdirs()
-        }
 
         if (file.exists()) {
             runCatching {

@@ -13,8 +13,6 @@ import kotlin.math.log
 
 class PlayerQuitListener(
     private val userManager: UserManager,
-    private val scope: CoroutineScope,
-//    private val logger: BukkitLogger
 ) : Listener {
 
     @EventHandler

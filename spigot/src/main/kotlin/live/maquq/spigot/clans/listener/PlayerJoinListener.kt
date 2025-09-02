@@ -11,6 +11,7 @@ class PlayerJoinListener(
     private val userManager: UserManager,
     private val scope: CoroutineScope
 ) : Listener {
+
     @EventHandler
     fun handlePlayerJoin(event: PlayerJoinEvent) {
         val player = event.player

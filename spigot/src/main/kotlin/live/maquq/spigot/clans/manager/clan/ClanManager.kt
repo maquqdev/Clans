@@ -1,4 +1,4 @@
-package live.maquq.spigot.clans.manager
+package live.maquq.spigot.clans.manager.clan
 
 
 import kotlinx.coroutines.async
@@ -10,6 +10,7 @@ import live.maquq.api.clan.ClanRole
 import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
+import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.module.ClanInvite
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
@@ -23,8 +24,8 @@ class ClanManager(
 ) {
 
     private val clanCache: MutableMap<String, Clan> = ConcurrentHashMap()
-
     private val pendingInvites: MutableMap<UUID, ClanInvite> = ConcurrentHashMap()
+    private val requestDelete: MutableMap<UUID, Clan> = ConcurrentHashMap()
 
     suspend fun getClan(tag: String): Clan? {
         val cachedClan = this.clanCache[tag]
@@ -36,9 +37,9 @@ class ClanManager(
         this.logger.debug("Cannot find '$tag' in cache, loading from database...")
         val clanFromDb = this.dataSource.loadClan(tag) ?: return null
 
-        clanFromDb.init { ownerUuid ->
-            if (ownerUuid == null) null else this.dataSource.loadUser(ownerUuid)
-        }
+//        clanFromDb.init { ownerUuid ->
+//            if (ownerUuid == null) null else this.dataSource.loadUser(ownerUuid)
+//        }
 
         this.clanCache[tag] = clanFromDb
         this.logger.debug("Saved clan '$tag' in cache.")
@@ -71,7 +72,6 @@ class ClanManager(
         this.logger.debug("Loading every clan to cache...")
         val allClans = this.dataSource.getAllClans()
         allClans.forEach { clan ->
-            clan.init { ownerUuid -> if (ownerUuid == null) null else this.dataSource.loadUser(ownerUuid) }
             this.clanCache[clan.tag] = clan
         }
         this.logger.debug("Loaded ${allClans.size} clans to cache.")
@@ -83,16 +83,31 @@ class ClanManager(
             tag = tag,
             ownerUuid = owner.uuid,
             members = mutableMapOf(owner.uuid to ClanRole.LEADER),
-            maxSize = 3 //TODO
+            maxSize = this.mainConfig.clanSettings.defaultSize,
+            pointsMultiplier = 1.0
         )
     }
 
-    suspend fun invitePlayer(inviter: User, target: User, clan: Clan) {
-//        if (target.clanTag != null) {
-//            return
-//        }
+    fun deleteRequest(
+        user: User,
+        clan: Clan
+    ): Boolean {
+        val requestedClan = this.requestDelete[user.uuid]
+        if(requestedClan != null) return true
 
-        val invite = ClanInvite(clan.tag, inviter.uuid)
+        this.requestDelete[user.uuid] = clan
+        return false
+    }
+
+    fun invitePlayer(
+        inviter: User,
+        target: User,
+        clan: Clan
+    ) {
+        val invite = ClanInvite(
+            clan.tag,
+            inviter.uuid
+        )
         this.pendingInvites[target.uuid] = invite
         this.logger.info("Gracz ${inviter.uuid} zaprosił ${target.uuid} do klanu ${clan.tag}")
     }
@@ -121,9 +136,8 @@ class ClanManager(
     }
 
     suspend fun averagePoints(clan: Clan, userManager: UserManager): Int {
-        if (clan.members.isEmpty()) {
-            return 500
-        }
+        if (clan.members.isEmpty())
+            return this.mainConfig.clanSettings.defaultPoints
 
         val totalPoints = coroutineScope {
             val usersPoints = clan.members.map { member ->
