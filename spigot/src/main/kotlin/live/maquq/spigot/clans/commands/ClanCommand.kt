@@ -251,38 +251,89 @@ class ClanCommand(
             val user = userManager.getUser(player.uniqueId)
             val targetUser = userManager.getUser(target.uniqueId)
 
-            val clanTag = user.clanTag
-            if(clanTag == null) {
+            val clanTag = user.clanTag ?: run {
                 miniText.deserialize(mainConfig.messages.notInAnyClan).component().let {
                     player.sendMessage(it)
                 }
+                return@launch
             }
 
-            targetUser.clanTag ?: miniText.deserialize(mainConfig.messages.targetNotInAnyClan).component().let {
-                player.sendMessage(it)
-            }
-
-            if (targetUser.clanTag != user.clanTag) {
+            if (targetUser.clanTag != clanTag) {
                 miniText.deserialize(mainConfig.messages.notSameClan).component().let {
                     player.sendMessage(it)
                 }
                 return@launch
             }
 
-            clanManager.getClan(clanTag!!).let { it ->
-                it!!.members[user.uuid]?.let { member ->
-                    if(member != ClanRole.LEADER) {
-                        miniText.deserialize(mainConfig.messages.notLeader).component().let { message ->
-                            player.sendMessage(message)
-                        }
-                        return@launch
-                    }
-
-                    it.members[targetUser.uuid] = ClanRole.LEADER
-                    println("zmieniono lidera")
-                    clanManager.saveClan(it)
+            val clan = clanManager.getClan(clanTag) ?: run {
+                miniText.deserialize(mainConfig.messages.clanNotFound).component().let {
+                    player.sendMessage(it)
                 }
+                return@launch
             }
+
+            if (clan.members[targetUser.uuid] == ClanRole.COLEADER || clan.members[targetUser.uuid] == ClanRole.LEADER) {
+                miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let {
+                    player.sendMessage(it)
+                }
+                return@launch
+            }
+
+            val currentColeaderEntry = clan.members.entries.find { it.value == ClanRole.COLEADER }
+
+            if (currentColeaderEntry != null) {
+                if (currentColeaderEntry.key == targetUser.uuid) {
+                    miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let {
+                        player.sendMessage(it)
+                    }
+                    return@launch
+                }
+
+                clan.members[currentColeaderEntry.key] = ClanRole.MEMBER
+            }
+
+            clan.members[targetUser.uuid] = ClanRole.COLEADER
+            clanManager.saveClan(clan)
+
+            miniText.deserialize(mainConfig.messages.promotedToColeaderSuccess
+                .replace("[PLAYER]", target.name)
+            ).component().let {
+                player.sendMessage(it)
+            }
+
+            miniText.deserialize(
+                mainConfig.messages.youWerePromotedToColeader
+                    .replace("[PLAYER]", target.name)
+            ).component().let {
+                target.sendMessage(it)
+            }
+        }
+    }
+
+    @Execute(name = "wyrzuc")
+    fun kickCommand(
+        @Context player: Player,
+        @Arg("gracz") target: Player
+    ) {
+        this.scope.launch {
+            val user = userManager.getUser(player.uniqueId)
+            val targetUser = userManager.getUser(target.uniqueId)
+
+            if(user.clanTag == null) {
+                miniText.deserialize(mainConfig.messages.notInAnyClan).component().let {
+                    player.sendMessage(it)
+                }
+                return@launch
+            }
+
+            if(user.clanTag != targetUser.clanTag) {
+                miniText.deserialize(mainConfig.messages.notSameClan).component().let {
+                    player.sendMessage(it)
+                }
+                return@launch
+            }
+
+            if
         }
     }
 

@@ -16,6 +16,7 @@ import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.configuration.impl.PointsType
 import live.maquq.spigot.clans.configuration.impl.StorageType
 import live.maquq.spigot.clans.listener.PlayerDeathListener
+import live.maquq.spigot.clans.listener.PlayerInteractEntityListener
 import live.maquq.spigot.clans.listener.PlayerJoinListener
 import live.maquq.spigot.clans.listener.PlayerQuitListener
 import live.maquq.spigot.clans.manager.clan.ClanManager
@@ -38,20 +39,19 @@ class ClansPlugin : JavaPlugin() {
             * /klan opusc //DONE
             * /klanw wyrzuc <name>
             * /klan usun [potwierdz] //TODO -- nie do konca
-            * /klan zastepca <name>
+            * /klan zastepca <name> //done
 
             * /klan ustawienia //TODO NEXT UP[DATE
             * /klan ulepsz //TODO NEXT UPDATE
+            * Clan home
        Kilka systemów punktów // done
        Title po zabójstwie + broadcast //done
-       System commentów w cfg
+       System commentów w cfg //?
        Wpierdolic wszystko do configu (komendy) //done
-       Handlowanie permisji w ClanManager -- invitePlayer
-       Shift + RPM = userInfo --- PlayerCommand.kt:
+       Handlowanie permisji w ClanManager -- invitePlayer //done
+        Shift + RPM = userInfo --- PlayerCommand.kt: //done
         wydzielić to na funkcje aby użyć w ...InteractionListener
-        Clan home
        Załadować dana il. użytkowników do topki (np. top 50)
-
 
        VaultUnlocked hook żeby robić upgrade size klanu
        Możliwość knockowania klanowiczów bez dmg?
@@ -233,8 +233,6 @@ class ClansPlugin : JavaPlugin() {
     }
 
     private fun registerListeners() {
-        val pluginManager = this.server.pluginManager
-
         val playerJoinListener = PlayerJoinListener(
             this.userManager,
             this.scope
@@ -249,8 +247,17 @@ class ClansPlugin : JavaPlugin() {
             this.pointsManager,
             this.userManager
         )
+        val playerInteractEntityListener = PlayerInteractEntityListener(
+            this.userManager,
+            this.scope,
+            this.miniText,
+            this.mainConfig.get
+        )
+
+        val pluginManager = this.server.pluginManager
         pluginManager.registerEvents(playerJoinListener, this)
         pluginManager.registerEvents(playerQuitListener, this)
         pluginManager.registerEvents(playerDeathListener, this)
+        pluginManager.registerEvents(playerInteractEntityListener, this)
     }
 }

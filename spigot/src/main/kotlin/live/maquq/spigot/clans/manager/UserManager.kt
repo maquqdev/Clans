@@ -1,5 +1,6 @@
 package live.maquq.spigot.clans.manager
 
+import com.bruhdows.minitext.MiniText
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,8 +9,7 @@ import live.maquq.api.DataSource
 import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
-import net.kyori.adventure.text.BlockNBTComponent
-import org.bukkit.entity.Player
+import org.bukkit.Bukkit
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -44,12 +44,6 @@ class UserManager(
         this.userCache[user.uuid] = user
     }
 
-    suspend fun removeUser(user: User) {
-        this.logger.debug("Deleted ${user.uuid} from database and cache.")
-        this.dataSource.removeUser(user)
-        this.userCache.remove(user.uuid)
-    }
-
     fun handlePlayerQuit(uuid: UUID) {
         scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
             logger.error("Failed to save user data for player ${uuid}: ${exception.message}")
@@ -65,19 +59,37 @@ class UserManager(
         this.logger.debug("Saved $uuid.")
     }
 
-    fun createNewUser(player: Player, defaultPoints: Int): User {
-        this.logger.debug("Creating a new user for player: ${player.name} (${player.uniqueId})")
-        return User(
-            uuid = player.uniqueId,
-            points = defaultPoints,
-        )
-    }
-
     fun createNewUser(uuid: UUID, defaultPoints: Int): User {
         this.logger.debug("Creating a new user for player: $uuid")
         return User(
             uuid = uuid,
             points = defaultPoints
         )
+    }
+
+    fun sendInfo(
+        user: User,
+        targetUser: User,
+        mainConfig: PluginConfiguration,
+        miniText: MiniText
+    ) {
+        val clanTag = targetUser.clanTag ?: "BRAK"
+        val kdFormatted = if (targetUser.deaths > 0)
+            String.format("%.2f", targetUser.kills.toDouble() / targetUser.deaths)
+        else
+            targetUser.kills.toString()
+
+        val message = mainConfig.messages.playerInfo
+            .replace("[PLAYER]", Bukkit.getPlayer(targetUser.uuid)!!.name)
+            .replace("[TAG]", clanTag)
+            .replace("[POINTS]", targetUser.points.toString())
+            .replace("[DEATHS]", targetUser.deaths.toString())
+            .replace("[KILLS]", targetUser.kills.toString())
+            .replace("[COLEADER]", "")
+            .replace("[KD]", kdFormatted)
+
+        miniText.deserialize(message).component().let {
+            Bukkit.getPlayer(user.uuid)!!.sendMessage(it)
+        }
     }
 }
