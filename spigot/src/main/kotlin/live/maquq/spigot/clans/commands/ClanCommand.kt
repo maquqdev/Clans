@@ -26,7 +26,7 @@ class ClanCommand(
 ) {
 
     @Execute(name = "stworz")
-    fun execute(
+    fun createCommand(
         @Context player: Player,
         @Arg("tag") tag: String
     ) {
@@ -146,7 +146,9 @@ class ClanCommand(
             }
 
             val averagePoints = clanManager.averagePoints(clan, userManager)
-            val coLeader = clan.members.entries.find { it.value == ClanRole.COLEADER }?.key?.let { Bukkit.getOfflinePlayer(it).name } ?: "Brak"
+            val coLeader =
+                clan.members.entries.find { it.value == ClanRole.COLEADER }?.key?.let { Bukkit.getOfflinePlayer(it).name }
+                    ?: "Brak"
 
             miniText.deserialize(
                 mainConfig.messages.clanInfo
@@ -295,8 +297,9 @@ class ClanCommand(
             clan.members[targetUser.uuid] = ClanRole.COLEADER
             clanManager.saveClan(clan)
 
-            miniText.deserialize(mainConfig.messages.promotedToColeaderSuccess
-                .replace("[PLAYER]", target.name)
+            miniText.deserialize(
+                mainConfig.messages.promotedToColeaderSuccess
+                    .replace("[PLAYER]", target.name)
             ).component().let {
                 player.sendMessage(it)
             }
@@ -319,21 +322,40 @@ class ClanCommand(
             val user = userManager.getUser(player.uniqueId)
             val targetUser = userManager.getUser(target.uniqueId)
 
-            if(user.clanTag == null) {
+            if (user.clanTag == null) {
                 miniText.deserialize(mainConfig.messages.notInAnyClan).component().let {
                     player.sendMessage(it)
                 }
                 return@launch
             }
 
-            if(user.clanTag != targetUser.clanTag) {
+            if (user.clanTag != targetUser.clanTag) {
                 miniText.deserialize(mainConfig.messages.notSameClan).component().let {
                     player.sendMessage(it)
                 }
                 return@launch
             }
 
-            if
+            clanManager.getClan(user.clanTag!!).let { clan ->
+                clan!!.members.remove(target.uniqueId)
+                clanManager.saveClan(clan)
+
+                targetUser.clanTag = null
+            }
+
+            miniText.deserialize(
+                mainConfig.messages.kickedSuccess
+                    .replace("[PLAYER]", target.name)
+            ).component().let {
+                player.sendMessage(it)
+            }
+
+            miniText.deserialize(
+                mainConfig.messages.youWerekicked
+                    .replace("[TAG]", user.clanTag!!)
+            ).component().let {
+                target.sendMessage(it)
+            }
         }
     }
 
