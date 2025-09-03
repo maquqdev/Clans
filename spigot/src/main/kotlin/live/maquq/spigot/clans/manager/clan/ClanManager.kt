@@ -109,7 +109,7 @@ class ClanManager(
             inviter.uuid
         )
         this.pendingInvites[target.uuid] = invite
-        this.logger.info("Gracz ${inviter.uuid} zaprosił ${target.uuid} do klanu ${clan.tag}")
+        this.logger.info("Player ${inviter.uuid} invited ${target.uuid} to clan ${clan.tag}")
     }
 
     suspend fun acceptInvite(joiningUser: User): Boolean {
@@ -131,7 +131,7 @@ class ClanManager(
 
         this.pendingInvites.remove(joiningUser.uuid)
 
-        this.logger.debug("Gracz ${joiningUser.uuid} dołączył do klanu ${clan.tag}")
+        this.logger.debug("Player ${joiningUser.uuid} joined to clan ${clan.tag}")
         return true
     }
 
@@ -150,9 +150,5 @@ class ClanManager(
         }
 
         return totalPoints / clan.members.size
-    }
-
-    fun getAllClans(): List<Clan> {
-        return this.clanCache.values.toList()
     }
 }

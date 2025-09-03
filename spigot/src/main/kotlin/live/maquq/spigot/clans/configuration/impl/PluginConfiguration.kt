@@ -76,6 +76,7 @@ class MessageSettings : ConfigTemplate {
     var targetAlreadyInClan: String = "[red]Gracz jest juz w jakim klanie!"
     var notInAnyClan: String = "[red]Nie jestes w zadnym klanie!"
     var targetIsAlreadyColeader: String = "[red]Ten gracz jest już coleaderem"
+    var cantPromote: String = "[red]Tylko lider moze awansowac na zastepce"
     var kickedSuccess: String = "[red]Wyrzucono [PLAYER] z klanu!"
     var youWerekicked: String = "[red]Zostales wyrzucony z klanu [TAG]"
     var promotedToColeaderSuccess: String = "[green]Awansowałeś [PLAYER] na coleadera!"
@@ -83,6 +84,9 @@ class MessageSettings : ConfigTemplate {
     var notLeader: String = "[red]Nie jesteś liderem klanu"
     var msgToInviter: String = "[green]Zaproszono gracza [yellow][INVITED][/yellow] do klanu."
     var notSameClan: String = "[red]Nie jesteście w tym samym klanie"
+    var selfKick: String = "[red]Nie możesz wyrzucić samego siebie"
+    var cantKick: String = "[red]Nie możesz wyrzucić lidera"
+    var notEnoughPermission: String = "[red]Nie masz wystarczająco uprawnien, aby wyrzucić gracza z klanu"
     var cantInvite: String = "[red]Nie możesz zaprosić, ponieważ jesteś członkiem"
     var invitedToClan: String = "[gold]Zostałeś zaproszony do klanu [yellow][CLAN-TAG][/yellow] przez [yellow][INVITER][/yellow]!\n" +
                                 "[gray]Wpisz [click:run_command:/clan join][aqua]/clan join[/aqua][/click] aby dołączyć"
@@ -92,6 +96,7 @@ class MessageSettings : ConfigTemplate {
         Informacje o klanie
         Tag: [TAG]
         Lider: [LEADER]
+        COLEADER: [COLEADER]
         Członkowie: [MEMBERS]
         Punkty: [POINTS]
     """.trimIndent()
