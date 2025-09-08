@@ -391,19 +391,4 @@ class ClanCommand(
             }
         }
     }
-
-    @Execute(name = "debug")
-    fun debug(@Context player: Player) {
-        this.scope.launch {
-            val user = userManager.getUser(player.uniqueId)
-
-            println("informacje o ${player.name}!!!")
-            if (user.clanTag != null)
-                println("ma klan ${user.clanTag}")
-            else
-                println("nie ma klanu")
-            println(user.kills)
-            println(user.deaths)
-        }
-    }
 }

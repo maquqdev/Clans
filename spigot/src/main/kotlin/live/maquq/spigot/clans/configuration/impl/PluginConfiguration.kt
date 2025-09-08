@@ -85,6 +85,7 @@ class MessageSettings : ConfigTemplate {
     var msgToInviter: String = "[green]Zaproszono gracza [yellow][INVITED][/yellow] do klanu."
     var notSameClan: String = "[red]Nie jesteście w tym samym klanie"
     var selfKick: String = "[red]Nie możesz wyrzucić samego siebie"
+    var selfPromotion: String = "[red]Nie możesz awansowwać samego siebie na zastepca"
     var cantKick: String = "[red]Nie możesz wyrzucić lidera"
     var notEnoughPermission: String = "[red]Nie masz wystarczająco uprawnien, aby wyrzucić gracza z klanu"
     var cantInvite: String = "[red]Nie możesz zaprosić, ponieważ jesteś członkiem"
@@ -119,5 +120,8 @@ class MessageSettings : ConfigTemplate {
 class PlayerDeathConfiguration : ConfigTemplate {
     var title: String = "ZABOJSTWO"
     var subtitle: String = "+[POINTS]"
+
+    var victimTitle: String = "ZGINALES"
+    var victimSubtitle: String = "-[POINTS]"
     var broadcast: String = "Gracz [VICTIM] (-[REMOVED-POINTS]) zginal od [KILLER] (+[ADDED-POINTS]) "
 }

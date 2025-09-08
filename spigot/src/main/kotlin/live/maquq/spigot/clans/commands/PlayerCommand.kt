@@ -25,10 +25,9 @@ class PlayerCommand(
         @Arg("gracz") target: Player,
     ) {
         this.scope.launch {
-            val user = userManager.getUser(player.uniqueId)
             val targetUser = userManager.getUser(target.uniqueId)
             userManager.sendInfo(
-                user = user,
+                player = player,
                 targetUser = targetUser,
                 mainConfig = mainConfig,
                 miniText = miniText

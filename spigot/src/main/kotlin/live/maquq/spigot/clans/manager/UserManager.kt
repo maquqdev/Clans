@@ -10,6 +10,7 @@ import live.maquq.api.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import org.bukkit.Bukkit
+import org.bukkit.entity.Player
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
@@ -68,7 +69,7 @@ class UserManager(
     }
 
     fun sendInfo(
-        user: User,
+        player: Player,
         targetUser: User,
         mainConfig: PluginConfiguration,
         miniText: MiniText
@@ -89,7 +90,7 @@ class UserManager(
             .replace("[KD]", kdFormatted)
 
         miniText.deserialize(message).component().let {
-            Bukkit.getPlayer(user.uuid)!!.sendMessage(it)
+            player.sendMessage(it)
         }
     }
 }

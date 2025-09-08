@@ -28,7 +28,9 @@ class PlayerDeathListener(
 
         this.scope.launch {
             val killerUser = userManager.getUser(killer.uniqueId)
+            killerUser.kills++
             val victimUser = userManager.getUser(victim.uniqueId)
+            victimUser.deaths++
 
             val calculatedPointsPair = pointsManager.removePointsFromPlayer(
                 killerUser,
@@ -40,13 +42,17 @@ class PlayerDeathListener(
                 "[POINTS]", calculatedPointsPair.first.toString())
             ).component()
 
+            val victimTitleTranslated = miniText.deserialize(playerDeathConfiguration.victimTitle)
+            val victimSubtitleTranslated = miniText.deserialize(playerDeathConfiguration.victimSubtitle.replace(
+                "[POINTS]", calculatedPointsPair.second.toString()
+            ))
+
             Title.title(
                 mainTitleTranslated,
                 subtitleTranslated
             ).let {
                 killer.showTitle(it)
             }
-
 
             miniText.deserialize(
                 playerDeathConfiguration.broadcast

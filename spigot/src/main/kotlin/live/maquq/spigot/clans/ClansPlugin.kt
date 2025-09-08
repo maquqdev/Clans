@@ -34,29 +34,12 @@ import java.io.File
 class ClansPlugin : JavaPlugin() {
 
     /*
-            TODO
-        * Komendy:
-            * /klan opusc //DONE
-            * /klanw wyrzuc <name>
-            * /klan usun [potwierdz] //TODO -- nie do konca
-            * /klan zastepca <name> //done
+        TODO
+       TODO Załadować dana il. użytkowników do topki (np. top 50)
+       TODO VaultUnlocked hook żeby robić upgrade size klanu
+       TODO Możliwość knockowania klanowiczów bez dmg?
 
-            * /klan ustawienia //TODO NEXT UP[DATE
-            * /klan ulepsz //TODO NEXT UPDATE
-            * Clan home
-       Kilka systemów punktów // done
-       Title po zabójstwie + broadcast //done
-       System commentów w cfg //?
-       Wpierdolic wszystko do configu (komendy) //done
-       Handlowanie permisji w ClanManager -- invitePlayer //done
-        Shift + RPM = userInfo --- PlayerCommand.kt: //done
-        wydzielić to na funkcje aby użyć w ...InteractionListener
-       Załadować dana il. użytkowników do topki (np. top 50)
-
-       VaultUnlocked hook żeby robić upgrade size klanu
-       Możliwość knockowania klanowiczów bez dmg?
-
-       ehhh zas te not null safety kod... po co ten kotlin???????
+       readme
      */
 
     private val job = SupervisorJob()
@@ -106,7 +89,7 @@ class ClansPlugin : JavaPlugin() {
             PluginConfiguration::class.java,
             File(
                 this.dataFolder,
-                "config.yml"
+                "config.json"
             ),
             this.logger
         )
@@ -196,7 +179,7 @@ class ClansPlugin : JavaPlugin() {
         )
 
         this.pointsManager = PointsManager(
-            points
+            this.points
         )
     }
 

@@ -40,23 +40,33 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
     implementation("com.github.Bruhdows:MiniText:v1.0.1")
+    implementation("com.googlecode.json-simple:json-simple:1.1.1")
+}
 
-    tasks {
-        named<ShadowJar>("shadowJar") {
-            relocate("kotlinx.coroutines", "live.maquq.libs.coroutines")
-            relocate("_COROUTINE", "live.maquq.libs.coroutines")
-//            relocate("com.google.gson", "live.maquq.libs.gson")
-            relocate("com.zaxxer.hikari", "live.maquq.libs.hikaricp")
-            relocate("org.mongodb", "live.maquq.libs.mongodb")
-            relocate("org.bson", "live.maquq.libs.bson")
-            relocate("com.mysql", "live.maquq.libs.mysql")
+tasks {
+    named<ShadowJar>("shadowJar") {
+        relocate("kotlin", "live.maquq.libs.kotlin")
+        relocate("org.jetbrains", "live.maquq.libs.jetbrains")
+        relocate("org.intellij", "live.maquq.libs.intellij")
+        relocate("kotlinx.coroutines", "live.maquq.libs.coroutines")
+        relocate("_COROUTINE", "live.maquq.libs.coroutines")
+        relocate("dev.rollczi.litecommands", "live.maquq.libs.litecommands")
+        relocate("com.bruhdows.minitext", "live.maquq.libs.minitext")
+//        relocate("net.kyori.adventure", "live.maquq.libs.adventure")
+        relocate("net.kyori.examination", "live.maquq.libs.examination")
+        relocate("com.zaxxer.hikari", "live.maquq.libs.hikaricp")
+        relocate("org.mongodb", "live.maquq.libs.mongodb")
+        relocate("org.bson", "live.maquq.libs.bson")
+        relocate("com.mysql", "live.maquq.libs.mysql")
+        relocate("com.google.protobuf", "live.maquq.libs.protobuf")
+        relocate("org.json.simple", "live.maquq.libs.json")
+        relocate("org.slf4j", "live.maquq.libs.slf4j")
 
-            archiveBaseName.set("Clans")
-            archiveClassifier.set("")
-        }
+        archiveBaseName.set("Clans")
+        archiveClassifier.set("")
+    }
 
-        build {
-            dependsOn(shadowJar)
-        }
+    build {
+        dependsOn(shadowJar)
     }
 }

@@ -2,8 +2,13 @@
     "configurations": [
         {
             "type": "gradle",
-            "name": "Run gradle server!",
+            "name": "Run paper server!",
             "tasks": ["runServer"]
+        },
+        {
+            "type": "gradle",
+            "name": "shade jar",
+            "tasks": ["shadowJar"]
         }
     ]
 }
