@@ -1,4 +1,4 @@
-package live.maquq.spigot.clans.gui.api
+package live.maquq.spigot.gui.api
 
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -33,8 +33,7 @@ interface InteractiveInventory {
     }
 
     fun fill(item: ItemStack) {
-        for (i in 0 until inventory.size) {
+        for (i in 0 until inventory.size)
             inventory.setItem(i, item.clone())
-        }
     }
 }

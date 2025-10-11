@@ -4,10 +4,10 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import live.maquq.api.DataSource
-import live.maquq.api.clan.Clan
-import live.maquq.api.clan.ClanRole
-import live.maquq.api.User
+import live.maquq.api.data.DataSource
+import live.maquq.api.user.clan.Clan
+import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.user.User
 import java.sql.Connection
 import java.util.*
 

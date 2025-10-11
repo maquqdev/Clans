@@ -1,7 +1,7 @@
 package live.maquq.spigot.clans.manager.points
 
-import live.maquq.api.Points
-import live.maquq.api.User
+import live.maquq.api.user.points.Points
+import live.maquq.api.user.User
 
 class PointsManager(private val points: Points) {
 

@@ -1,8 +1,7 @@
-package live.maquq.api
+package live.maquq.api.user
 
-import live.maquq.api.clan.Clan
 import org.bson.codecs.pojo.annotations.BsonId
-import java.util.*
+import java.util.UUID
 
 data class User(
     @BsonId val uuid: UUID,

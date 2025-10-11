@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import live.maquq.spigot.clans.configuration.impl.PlayerDeathConfiguration
 import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.points.PointsManager
 import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
@@ -18,7 +19,8 @@ class PlayerDeathListener(
     private val playerDeathConfiguration: PlayerDeathConfiguration,
 
     private val pointsManager: PointsManager,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val clanManager: ClanManager
 ) : Listener {
 
     @EventHandler
@@ -29,6 +31,7 @@ class PlayerDeathListener(
         this.scope.launch {
             val killerUser = userManager.getUser(killer.uniqueId)
             killerUser.kills++
+
             val victimUser = userManager.getUser(victim.uniqueId)
             victimUser.deaths++
 
@@ -37,9 +40,16 @@ class PlayerDeathListener(
                 victimUser
             )
 
+            var multiplier = 1.0
+
+            if(killerUser.clanTag != null)
+                clanManager.getClan(killerUser.clanTag!!)?.let {
+                    multiplier = it.pointsMultiplier
+                }
+
             val mainTitleTranslated = miniText.deserialize(playerDeathConfiguration.title).component()
             val subtitleTranslated = miniText.deserialize(playerDeathConfiguration.subtitle.replace(
-                "[POINTS]", calculatedPointsPair.first.toString())
+                "[POINTS]", (calculatedPointsPair.first * multiplier).toString())
             ).component()
 
             val victimTitleTranslated = miniText.deserialize(playerDeathConfiguration.victimTitle).component()
@@ -70,6 +80,8 @@ class PlayerDeathListener(
             ).component().let {
                 Bukkit.broadcast(it)
             }
+
+            event.deathMessage(null)
         }
     }
 }

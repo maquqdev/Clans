@@ -8,9 +8,9 @@ import com.mongodb.client.model.ReplaceOptions
 import com.mongodb.client.model.Updates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import live.maquq.api.DataSource
-import live.maquq.api.clan.Clan
-import live.maquq.api.User
+import live.maquq.api.data.DataSource
+import live.maquq.api.user.clan.Clan
+import live.maquq.api.user.User
 import java.util.*
 
 class MongoDataSource(private val connectionString: String) : DataSource {

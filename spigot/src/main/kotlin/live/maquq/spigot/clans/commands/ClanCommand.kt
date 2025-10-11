@@ -9,7 +9,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import live.maquq.api.clan.ClanRole
+import live.maquq.api.common.ClanQuitCause
+import live.maquq.api.events.user.UserJoinClanEvent
+import live.maquq.api.events.user.UserQuitClanEvent
+import live.maquq.api.user.clan.ClanRole
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
@@ -202,6 +205,26 @@ class ClanCommand(
                 return@launch
             }
 
+            clanManager.getClan(user.clanTag!!).let {
+                if (it!!.members[user.uuid] == ClanRole.LEADER) {
+                    miniText.deserialize(mainConfig.messages.leaderCantLeave).component().let { message ->
+                        player.sendMessage(message)
+                    }
+                    return@launch
+                }
+
+                it.members.remove(user.uuid)
+                clanManager.saveClan(it)
+
+                Bukkit.getPluginManager().callEvent(
+                    UserQuitClanEvent(
+                        user = user,
+                        clan = it,
+                        clanQuitCause = ClanQuitCause.LEAVE
+                    )
+                )
+            }
+
             user.clanTag = null
             userManager.saveUser(user)
 
@@ -374,6 +397,13 @@ class ClanCommand(
                 }
 
                 clan.members.remove(target.uniqueId)
+                Bukkit.getPluginManager().callEvent(
+                    UserQuitClanEvent(
+                        user = user,
+                        clan = clan,
+                        clanQuitCause = ClanQuitCause.KICK
+                    )
+                )
                 clanManager.saveClan(clan)
 
                 targetUser.clanTag = null

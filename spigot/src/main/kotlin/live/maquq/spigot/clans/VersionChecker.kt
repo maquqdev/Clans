@@ -104,8 +104,8 @@ class VersionChecker(
         this.logger.warn("<gold> /\\_/\\   <gray>Clans - New update available!</gold>")
         this.logger.warn("<gold>( o.o )</gold> Your version: <red>$local</red>")
         this.logger.warn("<gold> > ^ < </gold> New version: <green>$remote</green>")
-        this.logger.info("<aqua>      Latest changes: ${commitInfo.title}")
-        this.logger.info("<gray>      Commit: ${commitInfo.shortSha}")
+        this.logger.warn("<aqua>      Latest changes: ${commitInfo.title}")
+        this.logger.warn("<gray>      Commit: ${commitInfo.shortSha}")
         this.logger.warn("<gold>      Download: https://github.com/maquqdev/Clans/releases/latest")
         this.logger.warn(" ")
     }

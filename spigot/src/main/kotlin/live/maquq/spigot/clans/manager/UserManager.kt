@@ -5,8 +5,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import live.maquq.api.DataSource
-import live.maquq.api.User
+import live.maquq.api.data.DataSource
+import live.maquq.api.user.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import org.bukkit.Bukkit

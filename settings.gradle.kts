@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Clans-parent"
 
-include(":api", ":storage", ":spigot")
+include(":api", ":gui", ":storage", ":spigot")

@@ -1,7 +1,7 @@
-package live.maquq.spigot.clans.gui.listener
+package live.maquq.spigot.gui.listener
 
-import live.maquq.spigot.clans.gui.internal.InventoryImpl
-import live.maquq.spigot.clans.gui.manager.InventoryManager
+import live.maquq.spigot.gui.internal.InventoryImpl
+import live.maquq.spigot.gui.manager.InventoryManager
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
@@ -31,11 +31,11 @@ internal class InventoryListener(private val manager: InventoryManager) : Listen
 
         inventory.onClose?.invoke(event)
 
-        manager.unregister(event.player.uniqueId)
+        this.manager.unregister(event.player.uniqueId)
     }
 
     @EventHandler
     fun handlePlayerQuit(event: PlayerQuitEvent) {
-        manager.unregister(event.player.uniqueId)
+        this.manager.unregister(event.player.uniqueId)
     }
 }

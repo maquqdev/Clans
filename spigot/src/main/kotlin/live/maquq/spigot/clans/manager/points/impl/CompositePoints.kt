@@ -1,7 +1,7 @@
 package live.maquq.spigot.clans.manager.points.impl
 
-import live.maquq.api.Points
-import live.maquq.api.User
+import live.maquq.api.user.points.Points
+import live.maquq.api.user.User
 import live.maquq.spigot.clans.configuration.impl.ProportionalPointsConfiguration
 import kotlin.math.max
 import kotlin.math.roundToInt

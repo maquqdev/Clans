@@ -1,7 +1,7 @@
-package live.maquq.spigot.clans.gui.internal
+package live.maquq.spigot.gui.internal
 
-import live.maquq.spigot.clans.gui.api.ClickableItem
-import live.maquq.spigot.clans.gui.api.InteractiveInventory
+import live.maquq.spigot.gui.api.ClickableItem
+import live.maquq.spigot.gui.api.InteractiveInventory
 import org.bukkit.event.inventory.InventoryClickEvent
 
 internal class ClickableItemImpl(

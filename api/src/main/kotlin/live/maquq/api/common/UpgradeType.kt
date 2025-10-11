@@ -1,4 +1,4 @@
-package live.maquq.spigot.clans.manager.clan.type
+package live.maquq.api.common
 
 enum class UpgradeType {
     SIZE,

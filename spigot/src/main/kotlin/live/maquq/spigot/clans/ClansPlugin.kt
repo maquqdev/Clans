@@ -5,8 +5,9 @@ import com.bruhdows.minitext.formatter.FormatterType
 import dev.rollczi.litecommands.LiteCommands
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
-import live.maquq.api.DataSource
-import live.maquq.api.Points
+import live.maquq.api.data.DataSource
+import live.maquq.api.user.points.Points
+import live.maquq.spigot.gui.manager.InventoryManager
 import live.maquq.spigot.clans.commands.ClanCommand
 import live.maquq.spigot.clans.commands.PlayerCommand
 import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
@@ -38,6 +39,7 @@ class ClansPlugin : JavaPlugin() {
        TODO Załadować dana il. użytkowników do topki (np. top 50)
        TODO VaultUnlocked hook żeby robić upgrade size klanu
        TODO Możliwość knockowania klanowiczów bez dmg?
+       TODO Dokończyć API do klanów (moduł API)
 
        readme
      */
@@ -62,6 +64,7 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var userManager: UserManager
     private lateinit var clanManager: ClanManager
     private lateinit var pointsManager: PointsManager
+    private lateinit var inventoryManager: InventoryManager
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
@@ -165,22 +168,28 @@ class ClansPlugin : JavaPlugin() {
 
     private fun setupManagers() {
         this.userManager = UserManager(
-            this.dataSource,
-            this.logger,
-            this.scope,
-            this.mainConfig.get
+            dataSource = this.dataSource,
+            logger = this.logger,
+            scope = this.scope,
+            mainConfig = this.mainConfig.get
         )
 
         this.clanManager = ClanManager(
-            this.dataSource,
-            this.userManager,
-            this.mainConfig.get,
-            this.logger
+            dataSource = this.dataSource,
+            userManager = this.userManager,
+            mainConfig = this.mainConfig.get,
+            logger = this.logger
         )
 
         this.pointsManager = PointsManager(
-            this.points
+            points = this.points
         )
+
+        this.inventoryManager = InventoryManager(
+            this
+        )
+
+        this.inventoryManager.initialize()
     }
 
     private fun loadCommands() {
@@ -228,7 +237,8 @@ class ClansPlugin : JavaPlugin() {
             this.miniText,
             this.mainConfig.get.messages.playerDeath,
             this.pointsManager,
-            this.userManager
+            this.userManager,
+            this.clanManager
         )
         val playerInteractEntityListener = PlayerInteractEntityListener(
             this.userManager,

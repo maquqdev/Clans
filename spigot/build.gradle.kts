@@ -36,6 +36,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 
     implementation(project(":storage"))
+    implementation(project(":gui"))
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
@@ -52,7 +53,6 @@ tasks {
         relocate("_COROUTINE", "live.maquq.libs.coroutines")
         relocate("dev.rollczi.litecommands", "live.maquq.libs.litecommands")
         relocate("com.bruhdows.minitext", "live.maquq.libs.minitext")
-//        relocate("net.kyori.adventure", "live.maquq.libs.adventure")
         relocate("net.kyori.examination", "live.maquq.libs.examination")
         relocate("com.zaxxer.hikari", "live.maquq.libs.hikaricp")
         relocate("org.mongodb", "live.maquq.libs.mongodb")

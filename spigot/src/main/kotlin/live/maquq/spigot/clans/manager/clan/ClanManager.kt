@@ -4,14 +4,18 @@ package live.maquq.spigot.clans.manager.clan
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import live.maquq.api.DataSource
-import live.maquq.api.clan.Clan
-import live.maquq.api.clan.ClanRole
-import live.maquq.api.User
+import live.maquq.api.data.DataSource
+import live.maquq.api.events.clan.ClanCreateEvent
+import live.maquq.api.events.clan.ClanDeleteEvent
+import live.maquq.api.events.user.UserJoinClanEvent
+import live.maquq.api.user.clan.Clan
+import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.user.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.module.ClanInvite
+import org.bukkit.Bukkit
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
@@ -63,6 +67,9 @@ class ClanManager(
 
         this.dataSource.deleteClan(clan.tag)
         this.clanCache.remove(clan.tag)
+
+        Bukkit.getPluginManager().callEvent(ClanDeleteEvent(clan))
+
         this.logger.debug("Deleted clan ${clan.tag} and saved user!")
     }
 
@@ -77,13 +84,17 @@ class ClanManager(
 
     fun createNewClan(tag: String, owner: User): Clan {
         this.logger.debug("Creating clan '$tag' to owner ${owner.uuid}")
-        return Clan(
+
+        val clan = Clan(
             tag = tag,
             ownerUuid = owner.uuid,
             members = mutableMapOf(owner.uuid to ClanRole.LEADER),
-            maxSize = this.mainConfig.clanSettings.defaultSize,
-            pointsMultiplier = 1.0
+            maxSize = this.mainConfig.clanSettings.defaultSize
         )
+
+        Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
+
+        return clan
     }
 
     fun deleteRequest(
@@ -110,26 +121,28 @@ class ClanManager(
         this.logger.debug("Player ${inviter.uuid} invited ${target.uuid} to clan ${clan.tag}")
     }
 
-    suspend fun acceptInvite(joiningUser: User): Boolean {
-        val invite = this.pendingInvites[joiningUser.uuid] ?: return false
+    suspend fun acceptInvite(user: User): Boolean {
+        val invite = this.pendingInvites[user.uuid] ?: return false
 
         val inviteAgeSeconds = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis() - invite.timestamp)
         if (inviteAgeSeconds > this.mainConfig.clanSettings.timeToTimeoutInvite) {
-            this.pendingInvites.remove(joiningUser.uuid)
+            this.pendingInvites.remove(user.uuid)
             return false
         }
 
         val clan = this.getClan(invite.clanTag) ?: return false
 
-        clan.members[joiningUser.uuid] = ClanRole.MEMBER
+        clan.members[user.uuid] = ClanRole.MEMBER
         this.saveClan(clan)
 
-        val updatedUser = joiningUser.copy(clanTag = clan.tag)
+        val updatedUser = user.copy(clanTag = clan.tag)
         this.userManager.saveUser(updatedUser)
 
-        this.pendingInvites.remove(joiningUser.uuid)
+        this.pendingInvites.remove(user.uuid)
 
-        this.logger.debug("Player ${joiningUser.uuid} joined to clan ${clan.tag}")
+        Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
+
+        this.logger.debug("Player ${user.uuid} joined to clan ${clan.tag}")
         return true
     }
 

@@ -1,1 +1,0 @@
-czesc fejzu, nie skonczylem ok?

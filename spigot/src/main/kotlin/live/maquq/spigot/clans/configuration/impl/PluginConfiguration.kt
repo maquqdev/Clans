@@ -75,6 +75,7 @@ class MessageSettings : ConfigTemplate {
     var alreadyInClan: String = "[red]Jestes juz w jakims klanie!"
     var targetAlreadyInClan: String = "[red]Gracz jest juz w jakim klanie!"
     var notInAnyClan: String = "[red]Nie jestes w zadnym klanie!"
+    var leaderCantLeave: String = "[red]Nie jestes w zadnym klanie!"
     var targetIsAlreadyColeader: String = "[red]Ten gracz jest już coleaderem"
     var cantPromote: String = "[red]Tylko lider moze awansowac na zastepce"
     var kickedSuccess: String = "[red]Wyrzucono [PLAYER] z klanu!"

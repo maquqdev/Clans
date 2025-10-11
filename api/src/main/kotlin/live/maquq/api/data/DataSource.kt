@@ -1,6 +1,7 @@
-package live.maquq.api
+package live.maquq.api.data
 
-import live.maquq.api.clan.Clan
+import live.maquq.api.user.User
+import live.maquq.api.user.clan.Clan
 import java.util.UUID
 
 interface DataSource {
