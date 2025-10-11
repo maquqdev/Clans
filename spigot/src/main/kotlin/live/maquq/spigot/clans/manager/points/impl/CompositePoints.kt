@@ -11,21 +11,21 @@ class CompositePoints(
 ) : Points {
 
     override fun calculate(winner: User, loser: User): Pair<Int, Int> {
-        val gainForWinner = calculateGain(loser.points)
-        val lossForLoser = calculateLoss(loser.points)
+        val gainForWinner = this.calculateGain(loser.points)
+        val lossForLoser = this.calculateLoss(loser.points)
 
         return gainForWinner to (-1*lossForLoser)
     }
 
     private fun calculateGain(opponentRanking: Int): Int {
-        val config = proportionalPointsConfiguration
+        val config = this.proportionalPointsConfiguration
         val gain = (opponentRanking * config.gainPercent).roundToInt()
 
         return gain.coerceIn(config.minimumChange, config.maximumGain)
     }
 
     private fun calculateLoss(playerRanking: Int): Int {
-        val config = proportionalPointsConfiguration
+        val config = this.proportionalPointsConfiguration
         val loss = (playerRanking * config.lossPercent).roundToInt()
 
         return -max(config.minimumChange, loss)

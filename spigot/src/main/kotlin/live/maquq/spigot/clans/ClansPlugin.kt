@@ -94,8 +94,8 @@ class ClansPlugin : JavaPlugin() {
             this.logger
         )
 
-        this.dataSource = initializeDataSource(mainConfig.get)
-        this.points = initializePoints(mainConfig.get)
+        this.dataSource = this.initializeDataSource(mainConfig.get)
+        this.points = this.initializePoints(mainConfig.get)
 
         if (!this.setupDataSource()) {
             this.logger.error("Connection to database failed. Change database login credentials or use FLAT :)")

@@ -24,10 +24,11 @@ class UserManager(
     private val userCache: MutableMap<UUID, User> = ConcurrentHashMap()
 
     suspend fun getUser(uuid: UUID): User {
-        val cachedUser = this.userCache[uuid]
-        if (cachedUser != null) {
-            this.logger.debug("Loaded $uuid from cache.")
-            return cachedUser
+        this.userCache[uuid].let {
+            if (it != null) {
+                this.logger.debug("Loaded $uuid from cache.")
+                return it
+            }
         }
 
         this.logger.debug("Can't find $uuid in cache. Loading from database...")
@@ -46,13 +47,12 @@ class UserManager(
     }
 
     fun handlePlayerQuit(uuid: UUID) {
-        scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
-            logger.error("Failed to save user data for player ${uuid}: ${exception.message}")
+        this.scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
+            this.logger.error("Failed to save user data for player ${uuid}: ${exception.message}")
             exception.printStackTrace()
         }) {
             try {
-                val user = getUser(uuid)
-                saveUser(user)
+                saveUser(getUser(uuid))
             } catch (exception: Exception) {
                 logger.error("Unexpected error saving user data for ${uuid}: ${exception.message}")
             }

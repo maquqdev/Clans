@@ -35,60 +35,48 @@ class BukkitLogger(
     private var currentLogFile: File? = null
 
     init {
-        if (!logFolder.exists())
-            logFolder.mkdirs()
+        if (!this.logFolder.exists())
+            this.logFolder.mkdirs()
 
-        startFileWriter()
+        this.startFileWriter()
     }
 
     fun info(message: String) {
-        log(Level.INFO, message)
+        this.log(Level.INFO, message)
     }
 
     fun warn(message: String) {
-        log(Level.WARNING, message)
+        this.log(Level.WARNING, message)
     }
 
     fun error(message: String, throwable: Throwable? = null) {
-        log(Level.SEVERE, message, throwable)
+        this.log(Level.SEVERE, message, throwable)
     }
 
     fun debug(message: String) {
-        if (debugMode) log(Level.INFO, "<gray>[DEBUG] $message")
-    }
-
-    fun shutdown() {
-        logChannel.close()
-        job.cancel()
+        if (this.debugMode) this.log(Level.INFO, "<gray>[DEBUG] $message")
     }
 
     private fun log(level: Level, message: String, throwable: Throwable? = null) {
-        val consoleComponent = formatForConsole(level, message)
-        val fileMessage = formatForFile(level, message)
+        val consoleComponent = this.formatForConsole(level, message)
+        val fileMessage = this.formatForFile(level, message)
 
         val legacyMessage = this.legacySerializer.serialize(consoleComponent)
 
         this.plugin.logger.log(level, legacyMessage, throwable)
 
-        scope.launch {
-            runCatching {
+        this.scope.launch {
+            this.runCatching {
                 logChannel.send(fileMessage)
                 throwable.let { if (it != null) logChannel.send(it.stackTraceToString()) }
             }
-//            try {
-//                logChannel.send(fileMessage)
-//                if (throwable != null) {
-//                    logChannel.send(throwable.stackTraceToString())
-//                }
-//            } catch (ignored: ClosedSendChannelException) {
-//            }
         }
     }
 
-    private fun startFileWriter() = scope.launch {
+    private fun startFileWriter() = this.scope.launch {
         for (message in logChannel) {
             try {
-                val file = getAndPrepareTodaysLogFile()
+                val file = getAndPrepareTodayLogFile()
                 file.appendText("$message\n")
             } catch (exception: Exception) {
                 plugin.logger.log(
@@ -101,15 +89,15 @@ class BukkitLogger(
         }
     }
 
-    private fun getAndPrepareTodaysLogFile(): File {
-        val today = fileDateFormat.format(Date())
+    private fun getAndPrepareTodayLogFile(): File {
+        val today = this.fileDateFormat.format(Date())
         val currentFileName = "$today.log"
-        if (currentLogFile?.name == currentFileName) return currentLogFile!!
+        if (this.currentLogFile?.name == currentFileName) return this.currentLogFile!!
 
-        val newLogFile = File(logFolder, currentFileName)
+        val newLogFile = File(this.logFolder, currentFileName)
         if (!newLogFile.parentFile.exists()) newLogFile.parentFile.mkdirs()
 
-        return newLogFile.also { currentLogFile = it }
+        return newLogFile.also { this.currentLogFile = it }
     }
 
     private fun formatForConsole(level: Level, message: String): Component {
@@ -123,11 +111,16 @@ class BukkitLogger(
     }
 
     private fun formatForFile(level: Level, message: String): String {
-        val timestamp = logDateFormat.format(Date())
+        val timestamp = this.logDateFormat.format(Date())
         val levelName = level.name.padEnd(7) //tuff kot
         val parsedComponent = this.miniMessage.deserialize(message)
         val cleanMessage = PlainTextComponentSerializer.plainText().serialize(parsedComponent)
 
         return "[$timestamp] [$levelName] $cleanMessage"
+    }
+
+    fun shutdown() {
+        this.logChannel.close()
+        this.job.cancel()
     }
 }

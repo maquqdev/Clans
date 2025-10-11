@@ -14,8 +14,8 @@ class SkillBasedPoints(
 
     override fun calculate(winner: User, loser: User): Pair<Int, Int> {
         val rankingDifference = loser.points - winner.points
-        val upsetFactor = calculateUpsetFactor(rankingDifference)
-        val pointsExchange = (skillBasedPointsConfiguration.basePointExchange * upsetFactor).roundToInt()
+        val upsetFactor = this.calculateUpsetFactor(rankingDifference)
+        val pointsExchange = (this.skillBasedPointsConfiguration.basePointExchange * upsetFactor).roundToInt()
 
         val finalChange = max(1, pointsExchange)
 
@@ -23,7 +23,7 @@ class SkillBasedPoints(
     }
 
     private fun calculateUpsetFactor(rankingDifference: Int): Double {
-        val config = skillBasedPointsConfiguration
+        val config = this.skillBasedPointsConfiguration
         return if (rankingDifference > 0)
             1.0 + (rankingDifference / config.underdogDivisor)
         else

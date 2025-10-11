@@ -178,15 +178,14 @@ class ClanCommand(
             }
 
             val success = clanManager.acceptInvite(user)
-            if (success) {
+            if (success)
                 miniText.deserialize(mainConfig.messages.joinedToClan).component().let {
                     player.sendMessage(it)
                 }
-            } else {
+            else
                 miniText.deserialize(mainConfig.messages.cantJoin).component().let {
                     player.sendMessage(it)
                 }
-            }
         }
     }
 
@@ -234,11 +233,10 @@ class ClanCommand(
                     }
                     if (clanManager.deleteRequest(user, clan))
                         clanManager.deleteClan(clan)
-                    else {
+                    else
                         miniText.deserialize(mainConfig.messages.requestDelete).component().let {
                             player.sendMessage(it)
                         }
-                    }
                 }
             }
         }
@@ -274,32 +272,37 @@ class ClanCommand(
                 return@launch
             }
 
-            val targetClanRole = clan.members[targetUser.uuid]
-            if (targetClanRole == ClanRole.COLEADER || targetClanRole == ClanRole.LEADER) {
-                miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let {
-                    player.sendMessage(it)
-                }
-                return@launch
-            }
-
-            val clanRole = clan.members[user.uuid]
-            if(clanRole != ClanRole.LEADER) {
-                miniText.deserialize(mainConfig.messages.cantPromote).component().let {
-                    player.sendMessage(it)
-                }
-                return@launch
-            }
-
-            val currentColeaderEntry = clan.members.entries.find { it.value == ClanRole.COLEADER }
-            if (currentColeaderEntry != null) {
-                if (currentColeaderEntry.key == targetUser.uuid) {
-                    miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let {
-                        player.sendMessage(it)
+            clan.members[targetUser.uuid].let {
+                if (it == ClanRole.COLEADER || it == ClanRole.LEADER) {
+                    miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let { message ->
+                        player.sendMessage(message)
                     }
                     return@launch
                 }
+            }
 
-                clan.members[currentColeaderEntry.key] = ClanRole.MEMBER
+
+            clan.members[user.uuid].let {
+                if (it != ClanRole.LEADER) {
+                    miniText.deserialize(mainConfig.messages.cantPromote).component().let { message ->
+                        player.sendMessage(message)
+                    }
+                    return@launch
+                }
+            }
+
+
+            clan.members.entries.find { it.value == ClanRole.COLEADER }.let {
+                if (it != null) {
+                    if (it.key == targetUser.uuid) {
+                        miniText.deserialize(mainConfig.messages.targetIsAlreadyColeader).component().let {
+                            player.sendMessage(it)
+                        }
+                        return@launch
+                    }
+
+                    clan.members[it.key] = ClanRole.MEMBER
+                }
             }
 
             clan.members[targetUser.uuid] = ClanRole.COLEADER
@@ -344,7 +347,7 @@ class ClanCommand(
                 return@launch
             }
 
-            if(player == target) {
+            if (player == target) {
                 miniText.deserialize(mainConfig.messages.selfKick).component().let {
                     player.sendMessage(it)
                 }
@@ -354,12 +357,13 @@ class ClanCommand(
 
             clanManager.getClan(user.clanTag!!).let { clan ->
                 val playerRole = clan!!.members[player.uniqueId]
-                val hasPermission = playerRole == ClanRole.LEADER || playerRole == ClanRole.COLEADER
-                if(!hasPermission) {
-                    miniText.deserialize(mainConfig.messages.notEnoughPermission).component().let {
-                        player.sendMessage(it)
+                (playerRole == ClanRole.LEADER || playerRole == ClanRole.COLEADER).let {
+                    if (!it) {
+                        miniText.deserialize(mainConfig.messages.notEnoughPermission).component().let { message ->
+                            player.sendMessage(message)
+                        }
+                        return@launch
                     }
-                    return@launch
                 }
 
                 if (clan.members[targetUser.uuid] == ClanRole.LEADER) {
@@ -369,13 +373,13 @@ class ClanCommand(
                     return@launch
                 }
 
-
                 clan.members.remove(target.uniqueId)
                 clanManager.saveClan(clan)
 
                 targetUser.clanTag = null
                 userManager.saveUser(targetUser)
             }
+
             miniText.deserialize(
                 mainConfig.messages.kickedSuccess
                     .replace("[PLAYER]", target.name)

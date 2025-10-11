@@ -33,27 +33,5 @@ class PlayerCommand(
                 miniText = miniText
             )
         }
-//        scope.launch {
-//            userManager.getUser(target.uniqueId).run {
-//                val clanTag = this.clanTag ?: "BRAK"
-//                val kdFormatted = if (deaths > 0)
-//                    String.format("%.2f", kills.toDouble() / deaths)
-//                else
-//                    kills.toString()
-//
-//                val message = mainConfig.messages.playerInfo
-//                    .replace("[PLAYER]", target.name)
-//                    .replace("[TAG]", clanTag)
-//                    .replace("[POINTS]", points.toString())
-//                    .replace("[DEATHS]", deaths.toString())
-//                    .replace("[KILLS]", kills.toString())
-//                    .replace("[COLEADER]", "")
-//                    .replace("[KD]", kdFormatted)
-//
-//                miniText.deserialize(message).component().let {
-//                    player.sendMessage(it)
-//                }
-//            }
-//        }
     }
 }

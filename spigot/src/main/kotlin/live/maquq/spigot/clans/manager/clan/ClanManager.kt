@@ -37,10 +37,6 @@ class ClanManager(
         this.logger.debug("Cannot find '$tag' in cache, loading from database...")
         val clanFromDb = this.dataSource.loadClan(tag) ?: return null
 
-//        clanFromDb.init { ownerUuid ->
-//            if (ownerUuid == null) null else this.dataSource.loadUser(ownerUuid)
-//        }
-
         this.clanCache[tag] = clanFromDb
         this.logger.debug("Saved clan '$tag' in cache.")
 
@@ -51,6 +47,7 @@ class ClanManager(
         this.logger.debug("Saving ${clan.tag} to database and cache...")
         this.dataSource.saveClan(clan)
         this.clanCache[clan.tag] = clan
+        this.logger.debug("Saved ${clan.tag} to database and cache!")
     }
 
     suspend fun deleteClan(clan: Clan) {
@@ -66,6 +63,7 @@ class ClanManager(
 
         this.dataSource.deleteClan(clan.tag)
         this.clanCache.remove(clan.tag)
+        this.logger.debug("Deleted clan ${clan.tag} and saved user!")
     }
 
     suspend fun preloadAllClansToCache() {
@@ -109,7 +107,7 @@ class ClanManager(
             inviter.uuid
         )
         this.pendingInvites[target.uuid] = invite
-        this.logger.info("Player ${inviter.uuid} invited ${target.uuid} to clan ${clan.tag}")
+        this.logger.debug("Player ${inviter.uuid} invited ${target.uuid} to clan ${clan.tag}")
     }
 
     suspend fun acceptInvite(joiningUser: User): Boolean {

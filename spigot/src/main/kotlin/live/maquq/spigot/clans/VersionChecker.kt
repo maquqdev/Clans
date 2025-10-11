@@ -18,7 +18,7 @@ class VersionChecker(
     private val apiUrl = URL("https://api.github.com/repos/maquqdev/Clans/commits/main")
 
     fun check() {
-        scope.launch {
+        this.scope.launch {
             try {
                 val localVersion = plugin.description.version
 
@@ -34,7 +34,6 @@ class VersionChecker(
                         logUpdateMessage(localVersion, remoteVersion, commitInfo)
                      else
                         logUpdateMessage(localVersion, remoteVersion, CommitInfo("Unknown changes", "N/A"))
-
                 } else {
                     logger.info("You are using the latest version of Clans ($localVersion).")
                 }
@@ -55,7 +54,7 @@ class VersionChecker(
                 reader.readLine()?.trim()
             }
         } catch (e: Exception) {
-            logger.error("Could not fetch version file.", e)
+            this.logger.error("Could not fetch version file.", e)
             null
         }
     }
@@ -72,11 +71,11 @@ class VersionChecker(
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
                 parseCommitResponse(response)
             } else {
-                logger.warn("GitHub API returned ${connection.responseCode}: ${connection.responseMessage}")
+                this.logger.warn("GitHub API returned ${connection.responseCode}: ${connection.responseMessage}")
                 null
             }
-        } catch (e: Exception) {
-            logger.error("Could not fetch commit information from GitHub API.", e)
+        } catch (exception: Exception) {
+            this.logger.error("Could not fetch commit information from GitHub API.", exception)
             null
         }
     }
@@ -94,21 +93,21 @@ class VersionChecker(
             val shortSha = sha.take(7)
 
             CommitInfo(title, shortSha)
-        } catch (e: Exception) {
-            logger.error("Could not parse commit information.", e)
+        } catch (exception: Exception) {
+            this.logger.error("Could not parse commit information.", exception)
             null
         }
     }
 
     private fun logUpdateMessage(local: String, remote: String, commitInfo: CommitInfo) {
-        logger.warn(" ")
-        logger.warn("<gold> /\\_/\\   <gray>Clans - New update available!</gold>")
-        logger.warn("<gold>( o.o )</gold> Your version: <red>$local</red>")
-        logger.warn("<gold> > ^ < </gold> New version: <green>$remote</green>")
-        logger.info("<aqua>      Latest changes: ${commitInfo.title}")
-        logger.info("<gray>      Commit: ${commitInfo.shortSha}")
-        logger.warn("<gold>      Download: https://github.com/maquqdev/Clans/releases/latest")
-        logger.warn(" ")
+        this.logger.warn(" ")
+        this.logger.warn("<gold> /\\_/\\   <gray>Clans - New update available!</gold>")
+        this.logger.warn("<gold>( o.o )</gold> Your version: <red>$local</red>")
+        this.logger.warn("<gold> > ^ < </gold> New version: <green>$remote</green>")
+        this.logger.info("<aqua>      Latest changes: ${commitInfo.title}")
+        this.logger.info("<gray>      Commit: ${commitInfo.shortSha}")
+        this.logger.warn("<gold>      Download: https://github.com/maquqdev/Clans/releases/latest")
+        this.logger.warn(" ")
     }
 
     private data class CommitInfo(

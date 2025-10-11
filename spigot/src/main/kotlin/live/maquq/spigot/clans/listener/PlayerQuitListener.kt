@@ -17,23 +17,6 @@ class PlayerQuitListener(
 
     @EventHandler
     fun handlePlayerQuit(event: PlayerQuitEvent) {
-        this.userManager.handlePlayerQuit(event.player.uniqueId) //im confused..!>!>!>!>
-//        this.scope.launch {
-//        }
-//        val player = event.player ?: return
-//        val playerUuid = player.uniqueId ?: return
-//
-//        scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
-//            logger.error("Failed to save user data for player ${player.name} (${playerUuid}): ${exception.message}")
-//            exception.printStackTrace()
-//        }) {
-//            try {
-//                val user = userManager.getUser(playerUuid)
-//                if (user != null)
-//                    userManager.saveUser(user)
-//            } catch (exception: Exception) {
-//                logger.error("Unexpected error saving user data for ${player.name}: ${exception.message}")
-//            }
-//        }
+        this.userManager.handlePlayerQuit(event.player.uniqueId)
     }
 }
