@@ -35,11 +35,6 @@ class PlayerDeathListener(
             val victimUser = userManager.getUser(victim.uniqueId)
             victimUser.deaths++
 
-            val calculatedPointsPair = pointsManager.removePointsFromPlayer(
-                killerUser,
-                victimUser
-            )
-
             var multiplier = 1.0
 
             if(killerUser.clanTag != null)
@@ -47,9 +42,15 @@ class PlayerDeathListener(
                     multiplier = it.pointsMultiplier
                 }
 
+            val calculatedPointsPair = pointsManager.removePointsFromPlayer(
+                killerUser,
+                victimUser,
+                multiplier
+            )
+
             val mainTitleTranslated = miniText.deserialize(playerDeathConfiguration.title).component()
             val subtitleTranslated = miniText.deserialize(playerDeathConfiguration.subtitle.replace(
-                "[POINTS]", (calculatedPointsPair.first * multiplier).toString())
+                "[POINTS]", calculatedPointsPair.toString())
             ).component()
 
             val victimTitleTranslated = miniText.deserialize(playerDeathConfiguration.victimTitle).component()

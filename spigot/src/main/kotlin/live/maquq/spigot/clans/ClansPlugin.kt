@@ -175,6 +175,7 @@ class ClansPlugin : JavaPlugin() {
         )
 
         this.clanManager = ClanManager(
+            plugin = this,
             dataSource = this.dataSource,
             userManager = this.userManager,
             mainConfig = this.mainConfig.get,
@@ -212,7 +213,8 @@ class ClansPlugin : JavaPlugin() {
                     mainConfig = this.mainConfig.get,
                     scope = this.scope,
                     clanManager = this.clanManager,
-                    userManager = this.userManager
+                    userManager = this.userManager,
+                    plugin = this
                 ),
                 PlayerCommand(
                     miniText = this.miniText,

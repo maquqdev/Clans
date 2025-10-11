@@ -16,11 +16,13 @@ import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.module.ClanInvite
 import org.bukkit.Bukkit
+import org.bukkit.plugin.java.JavaPlugin
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 class ClanManager(
+    private val plugin: JavaPlugin,
     private val dataSource: DataSource,
     private val userManager: UserManager,
     private val mainConfig: PluginConfiguration,
@@ -58,17 +60,18 @@ class ClanManager(
         this.logger.debug("Deleting clan ${clan.tag} from database and cache...")
 
         for (memberUuid in clan.members.keys) {
-            val user = dataSource.loadUser(memberUuid)
-            if (user != null) {
-                val updatedUser = user.copy(clanTag = null)
-                dataSource.saveUser(updatedUser)
-            }
+            val user = this.userManager.getUser(memberUuid)
+            val updatedUser = user.copy(clanTag = null)
+
+            this.userManager.saveUser(updatedUser)
         }
 
         this.dataSource.deleteClan(clan.tag)
         this.clanCache.remove(clan.tag)
 
-        Bukkit.getPluginManager().callEvent(ClanDeleteEvent(clan))
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            Bukkit.getPluginManager().callEvent(ClanDeleteEvent(clan))
+        })
 
         this.logger.debug("Deleted clan ${clan.tag} and saved user!")
     }
@@ -92,8 +95,9 @@ class ClanManager(
             maxSize = this.mainConfig.clanSettings.defaultSize
         )
 
-        Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
-
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
+        })
         return clan
     }
 
@@ -102,7 +106,7 @@ class ClanManager(
         clan: Clan
     ): Boolean {
         val requestedClan = this.requestDelete[user.uuid]
-        if(requestedClan != null) return true
+        if (requestedClan != null) return true
 
         this.requestDelete[user.uuid] = clan
         return false
@@ -140,7 +144,9 @@ class ClanManager(
 
         this.pendingInvites.remove(user.uuid)
 
-        Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
+        })
 
         this.logger.debug("Player ${user.uuid} joined to clan ${clan.tag}")
         return true

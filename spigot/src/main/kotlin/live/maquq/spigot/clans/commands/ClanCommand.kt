@@ -18,9 +18,11 @@ import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.plugin.java.JavaPlugin
 
 @Command(name = "klan")
 class ClanCommand(
+    private val plugin: JavaPlugin,
     private val miniText: MiniText,
     private val mainConfig: PluginConfiguration,
     private val scope: CoroutineScope,
@@ -216,13 +218,15 @@ class ClanCommand(
                 it.members.remove(user.uuid)
                 clanManager.saveClan(it)
 
-                Bukkit.getPluginManager().callEvent(
-                    UserQuitClanEvent(
-                        user = user,
-                        clan = it,
-                        clanQuitCause = ClanQuitCause.LEAVE
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    Bukkit.getPluginManager().callEvent(
+                        UserQuitClanEvent(
+                            user = user,
+                            clan = it,
+                            clanQuitCause = ClanQuitCause.LEAVE
+                        )
                     )
-                )
+                })
             }
 
             user.clanTag = null
@@ -254,8 +258,12 @@ class ClanCommand(
                         }
                         return@launch
                     }
-                    if (clanManager.deleteRequest(user, clan))
+                    if (clanManager.deleteRequest(user, clan)) {
+//                        clan.members.forEach { member ->
+//                            userManager.getUser(member.key).clanTag = null
+//                        }
                         clanManager.deleteClan(clan)
+                    }
                     else
                         miniText.deserialize(mainConfig.messages.requestDelete).component().let {
                             player.sendMessage(it)
@@ -397,13 +405,15 @@ class ClanCommand(
                 }
 
                 clan.members.remove(target.uniqueId)
-                Bukkit.getPluginManager().callEvent(
-                    UserQuitClanEvent(
-                        user = user,
-                        clan = clan,
-                        clanQuitCause = ClanQuitCause.KICK
+                Bukkit.getScheduler().runTask(plugin, Runnable {
+                    Bukkit.getPluginManager().callEvent(
+                        UserQuitClanEvent(
+                            user = user,
+                            clan = clan,
+                            clanQuitCause = ClanQuitCause.KICK
+                        )
                     )
-                )
+                })
                 clanManager.saveClan(clan)
 
                 targetUser.clanTag = null
