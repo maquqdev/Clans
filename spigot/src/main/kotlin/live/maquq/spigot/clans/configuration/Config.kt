@@ -2,17 +2,15 @@ package live.maquq.spigot.clans.configuration
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.*
 import live.maquq.spigot.clans.BukkitLogger
-import live.maquq.spigot.clans.configuration.adapter.ComponentAdapter
-import live.maquq.spigot.clans.configuration.adapter.ComponentListAdapter
 import live.maquq.spigot.clans.configuration.adapter.ItemStackAdapter
-import net.kyori.adventure.text.Component
+import live.maquq.spigot.clans.configuration.adapter.OptionalAdapter
 import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.io.FileReader
 import java.io.FileWriter
+import java.lang.reflect.Modifier
 
 class Config<T : ConfigTemplate>(
     private val configClass: Class<T>,
@@ -20,7 +18,9 @@ class Config<T : ConfigTemplate>(
     private val logger: BukkitLogger
 ) {
     private val gson: Gson = GsonBuilder()
-        .registerTypeAdapter(ItemStack::class.java, ItemStackAdapter())
+        .registerTypeHierarchyAdapter(ItemStack::class.java, ItemStackAdapter())
+        .registerTypeAdapterFactory(OptionalAdapter.FACTORY)
+        .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
         .setPrettyPrinting()
         .disableHtmlEscaping()
         .serializeNulls()

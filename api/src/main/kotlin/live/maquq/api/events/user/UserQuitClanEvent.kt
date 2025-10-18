@@ -11,7 +11,7 @@ class UserQuitClanEvent(
     val user: User,
     val clan: Clan,
     val clanQuitCause: ClanQuitCause
-) : Event() {
+) : Event(true) {
 
     override fun getHandlers(): HandlerList = HANDLERS
 

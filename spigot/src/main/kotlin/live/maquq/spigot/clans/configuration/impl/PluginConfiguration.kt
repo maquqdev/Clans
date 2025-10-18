@@ -9,8 +9,10 @@ enum class StorageType {
 class PluginConfiguration : ConfigTemplate {
     var storage: StorageType = StorageType.FLAT
 
+    var broker: BrokerSettings = BrokerSettings()
     var mysql: MysqlSettings = MysqlSettings()
     var mongo: MongoSettings = MongoSettings()
+
     var clanSettings: ClanSettings = ClanSettings()
     var messages: MessageSettings = MessageSettings()
 }
@@ -26,6 +28,14 @@ class MysqlSettings : ConfigTemplate {
 
 class MongoSettings : ConfigTemplate {
     var connectionString: String = "mongodb://localhost:27017/testng"
+}
+
+class BrokerSettings : ConfigTemplate {
+    var enabled: Boolean = false
+
+    var url: String = "ws://localhost:8080/ws"
+    var username: String = "user"
+    var password: String = "password"
 }
 
 class ClanSettings : ConfigTemplate {

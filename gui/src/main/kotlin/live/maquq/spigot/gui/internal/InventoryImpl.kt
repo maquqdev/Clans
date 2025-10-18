@@ -3,15 +3,18 @@ package live.maquq.spigot.gui.internal
 import live.maquq.spigot.gui.api.ClickableItem
 import live.maquq.spigot.gui.api.InteractiveInventory
 import live.maquq.spigot.gui.manager.InventoryManager
+import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
+import org.bukkit.plugin.java.JavaPlugin
 
 internal class InventoryImpl(
     override val inventory: Inventory,
-    private val manager: InventoryManager
+    private val manager: InventoryManager,
+    private val javaPlugin: JavaPlugin,
 ) : InteractiveInventory {
 
     internal val slotClickHandlers: MutableMap<Int, (InventoryClickEvent) -> Unit> = mutableMapOf()
@@ -32,8 +35,10 @@ internal class InventoryImpl(
     }
 
     override fun open(player: Player) {
-        this.manager.register(player, this)
-        player.openInventory(this.inventory)
+        Bukkit.getScheduler().runTask(this.javaPlugin, Runnable {
+            player.openInventory(inventory)
+            manager.register(player, this)
+        })
     }
 
     override fun setItem(slot: Int, item: ItemStack): ClickableItem {

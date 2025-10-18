@@ -21,7 +21,11 @@ class InventoryManager(private val plugin: JavaPlugin) {
 
     fun create(size: Int, title: Component): InteractiveInventory {
         val bukkitInventory = Bukkit.createInventory(null, size, title)
-        return InventoryImpl(bukkitInventory, this)
+        return InventoryImpl(
+            bukkitInventory,
+            this,
+            this.plugin
+        )
     }
 
     internal fun register(player: Player, inventory: InteractiveInventory) {

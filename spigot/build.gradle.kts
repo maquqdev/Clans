@@ -17,7 +17,7 @@ bukkit {
         name = "Clans"
         version = "0.1-DEV"
         main = "live.maquq.spigot.clans.ClansPlugin"
-        depend = listOf("Vault")
+//        depend = listOf("Vault") not needed rn
         authors = listOf("maquq")
     }
 
@@ -40,8 +40,9 @@ dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
-    implementation("com.github.Bruhdows:MiniText:v1.0.1")
+//    implementation("com.github.Bruhdows:MiniText:v1.0.1")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
+//    implementation("com.github.maquqdev:GoBrokerClient:1.0.0")
 }
 
 tasks {
@@ -70,3 +71,4 @@ tasks {
         dependsOn(shadowJar)
     }
 }
+

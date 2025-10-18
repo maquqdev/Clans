@@ -50,7 +50,7 @@ class PlayerDeathListener(
 
             val mainTitleTranslated = miniText.deserialize(playerDeathConfiguration.title).component()
             val subtitleTranslated = miniText.deserialize(playerDeathConfiguration.subtitle.replace(
-                "[POINTS]", calculatedPointsPair.toString())
+                "[POINTS]", calculatedPointsPair.first.toString())
             ).component()
 
             val victimTitleTranslated = miniText.deserialize(playerDeathConfiguration.victimTitle).component()

@@ -69,9 +69,7 @@ class ClanManager(
         this.dataSource.deleteClan(clan.tag)
         this.clanCache.remove(clan.tag)
 
-        Bukkit.getScheduler().runTask(plugin, Runnable {
-            Bukkit.getPluginManager().callEvent(ClanDeleteEvent(clan))
-        })
+        Bukkit.getPluginManager().callEvent(ClanDeleteEvent(clan))
 
         this.logger.debug("Deleted clan ${clan.tag} and saved user!")
     }
@@ -95,9 +93,7 @@ class ClanManager(
             maxSize = this.mainConfig.clanSettings.defaultSize
         )
 
-        Bukkit.getScheduler().runTask(plugin, Runnable {
-            Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
-        })
+        Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
         return clan
     }
 
@@ -144,9 +140,7 @@ class ClanManager(
 
         this.pendingInvites.remove(user.uuid)
 
-        Bukkit.getScheduler().runTask(plugin, Runnable {
-            Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
-        })
+        Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
 
         this.logger.debug("Player ${user.uuid} joined to clan ${clan.tag}")
         return true

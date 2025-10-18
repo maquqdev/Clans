@@ -13,6 +13,7 @@ import live.maquq.spigot.clans.commands.PlayerCommand
 import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
 import live.maquq.spigot.clans.commands.handler.InvalidUsageHandler
 import live.maquq.spigot.clans.configuration.Config
+import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.configuration.impl.PointsType
 import live.maquq.spigot.clans.configuration.impl.StorageType
@@ -57,7 +58,10 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var dataSource: DataSource
     private lateinit var points: Points
 
+//    private lateinit var brokerClient: BrokerClient
+
     private lateinit var mainConfig: Config<PluginConfiguration>
+    private lateinit var guiConfig: Config<GuiConfiguration>
 
     private lateinit var liteCommands: LiteCommands<CommandSender>
 
@@ -65,6 +69,7 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var clanManager: ClanManager
     private lateinit var pointsManager: PointsManager
     private lateinit var inventoryManager: InventoryManager
+//    private lateinit var subscribeManager: SubscribeManager
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
@@ -97,6 +102,15 @@ class ClansPlugin : JavaPlugin() {
             this.logger
         )
 
+        this.guiConfig = Config(
+            GuiConfiguration::class.java,
+            File(
+                this.dataFolder,
+                "guiConfiguration.json"
+            ),
+            this.logger
+        )
+
         this.dataSource = this.initializeDataSource(mainConfig.get)
         this.points = this.initializePoints(mainConfig.get)
 
@@ -107,6 +121,10 @@ class ClansPlugin : JavaPlugin() {
         }
 
         this.setupManagers()
+
+        if (this.mainConfig.get.broker.enabled)
+            this.setupBroker()
+
         this.registerListeners()
         VersionChecker(
             this,
@@ -125,6 +143,7 @@ class ClansPlugin : JavaPlugin() {
         this.dataSource.disconnect()
         this.logger.shutdown()
         this.job.cancel() //need to cancel slur...🌹🌺🌺
+//        this.brokerClient.disconnect()
 
         super.getLogger().info("Plugin has been successfully disabled!")
     }
@@ -162,8 +181,27 @@ class ClansPlugin : JavaPlugin() {
         }.isSuccess
     }
 
+    private fun setupBroker() = runBlocking {
+        //Soon update
+//        val brokerConfiguration = mainConfig.get.broker
+//        brokerClient = BrokerClient(
+//            brokerConfiguration.url,
+//            brokerConfiguration.username,
+//            brokerConfiguration.password
+//        )
+//
+//        if (!brokerClient.connect().get()) {
+//            logger.error("Can't connect to message broker, synchronize function won't work.")
+//            return@runBlocking
+//        }
+//
+//        subscribeManager.subscribe(brokerClient)
+    }
+
     private fun loadClansToCache() {
-        this.scope.launch { clanManager.preloadAllClansToCache() }
+        this.scope.launch {
+            clanManager.preloadAllClansToCache()
+        }
     }
 
     private fun setupManagers() {
@@ -214,8 +252,10 @@ class ClansPlugin : JavaPlugin() {
                     scope = this.scope,
                     clanManager = this.clanManager,
                     userManager = this.userManager,
-                    plugin = this
+                    inventoryManager = this.inventoryManager,
+                    guiConfiguration = guiConfig.get
                 ),
+
                 PlayerCommand(
                     miniText = this.miniText,
                     scope = this.scope,

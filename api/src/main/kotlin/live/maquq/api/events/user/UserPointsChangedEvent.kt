@@ -9,7 +9,7 @@ class UserPointsChangedEvent(
     val user: User,
     val points: Int,
     val deathCause: DeathCause
-) : Event() {
+) : Event(true) {
 
     override fun getHandlers(): HandlerList = HANDLERS
 

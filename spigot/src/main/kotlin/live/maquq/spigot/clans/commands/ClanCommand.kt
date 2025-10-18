@@ -13,21 +13,25 @@ import live.maquq.api.common.ClanQuitCause
 import live.maquq.api.events.user.UserJoinClanEvent
 import live.maquq.api.events.user.UserQuitClanEvent
 import live.maquq.api.user.clan.ClanRole
+import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.menu.ClanMenu
+import live.maquq.spigot.gui.manager.InventoryManager
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.plugin.java.JavaPlugin
 
 @Command(name = "klan")
 class ClanCommand(
-    private val plugin: JavaPlugin,
     private val miniText: MiniText,
     private val mainConfig: PluginConfiguration,
     private val scope: CoroutineScope,
     private val clanManager: ClanManager,
-    private val userManager: UserManager
+    private val userManager: UserManager,
+    private val inventoryManager: InventoryManager,
+    private val guiConfiguration: GuiConfiguration
 ) {
 
     @Execute(name = "stworz")
@@ -218,15 +222,13 @@ class ClanCommand(
                 it.members.remove(user.uuid)
                 clanManager.saveClan(it)
 
-                Bukkit.getScheduler().runTask(plugin, Runnable {
-                    Bukkit.getPluginManager().callEvent(
-                        UserQuitClanEvent(
-                            user = user,
-                            clan = it,
-                            clanQuitCause = ClanQuitCause.LEAVE
-                        )
+                Bukkit.getPluginManager().callEvent(
+                    UserQuitClanEvent(
+                        user = user,
+                        clan = it,
+                        clanQuitCause = ClanQuitCause.LEAVE
                     )
-                })
+                )
             }
 
             user.clanTag = null
@@ -263,8 +265,7 @@ class ClanCommand(
 //                            userManager.getUser(member.key).clanTag = null
 //                        }
                         clanManager.deleteClan(clan)
-                    }
-                    else
+                    } else
                         miniText.deserialize(mainConfig.messages.requestDelete).component().let {
                             player.sendMessage(it)
                         }
@@ -405,15 +406,13 @@ class ClanCommand(
                 }
 
                 clan.members.remove(target.uniqueId)
-                Bukkit.getScheduler().runTask(plugin, Runnable {
-                    Bukkit.getPluginManager().callEvent(
-                        UserQuitClanEvent(
-                            user = user,
-                            clan = clan,
-                            clanQuitCause = ClanQuitCause.KICK
-                        )
+                Bukkit.getPluginManager().callEvent(
+                    UserQuitClanEvent(
+                        user = user,
+                        clan = clan,
+                        clanQuitCause = ClanQuitCause.KICK
                     )
-                })
+                )
                 clanManager.saveClan(clan)
 
                 targetUser.clanTag = null
@@ -433,6 +432,14 @@ class ClanCommand(
             ).component().let {
                 target.sendMessage(it)
             }
+        }
+    }
+
+    @Execute(name = "panel")
+    fun executeTest(@Context player: Player) {
+        this.scope.launch {
+            ClanMenu(inventoryManager, miniText, guiConfiguration)
+                .open(player)
         }
     }
 }

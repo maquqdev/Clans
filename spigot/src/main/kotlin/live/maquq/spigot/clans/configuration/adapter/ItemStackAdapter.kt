@@ -1,9 +1,9 @@
 package live.maquq.spigot.clans.configuration.adapter
 
 import com.google.gson.*
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.minimessage.MiniMessage
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemStack
 import java.lang.reflect.Type
@@ -15,6 +15,7 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
     override fun serialize(item: ItemStack, typeOfSrc: Type, context: JsonSerializationContext): JsonElement {
         val obj = JsonObject()
         obj.addProperty("material", item.type.name)
+        obj.addProperty("amount", item.amount)
 
         if (item.hasItemMeta()) {
             val meta = item.itemMeta!!
@@ -33,7 +34,7 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
             if (meta.hasEnchants()) {
                 val enchantsObj = JsonObject()
                 meta.enchants.forEach { (enchant, level) ->
-                    enchantsObj.addProperty(enchant.key.key, level)
+                    enchantsObj.addProperty(enchant.key.toString(), level)
                 }
                 obj.add("enchants", enchantsObj)
             }
@@ -47,7 +48,9 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
 
         val materialName = obj.get("material")?.asString ?: throw JsonParseException("ItemStack requires a 'material' field")
         val material = Material.matchMaterial(materialName) ?: Material.STONE
-        val item = ItemStack(material)
+        val amount = obj.get("amount")?.asInt ?: 1
+
+        val item = ItemStack(material, amount)
         val meta = item.itemMeta ?: return item
 
         obj.get("name")?.asString?.let { meta.displayName(miniMessage.deserialize(it)) }
@@ -57,9 +60,20 @@ class ItemStackAdapter : JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> 
         }?.let { meta.lore(it) }
 
         obj.get("enchants")?.asJsonObject?.entrySet()?.forEach { entry ->
-            Enchantment.getByName(entry.key.uppercase())?.let { enchant ->
+            val enchant = when {
+                entry.key.contains(":") -> {
+                    val parts = entry.key.split(":", limit = 2)
+                    Enchantment.getByKey(NamespacedKey(parts[0], parts[1]))
+                }
+                else -> {
+                    Enchantment.getByKey(NamespacedKey.minecraft(entry.key.lowercase()))
+                        ?: Enchantment.getByName(entry.key.uppercase())
+                }
+            }
+
+            enchant?.let {
                 val level = entry.value.asInt
-                meta.addEnchant(enchant, level, true)
+                meta.addEnchant(it, level, true)
             }
         }
 

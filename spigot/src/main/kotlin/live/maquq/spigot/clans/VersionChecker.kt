@@ -37,8 +37,8 @@ class VersionChecker(
                 } else {
                     logger.info("You are using the latest version of Clans ($localVersion).")
                 }
-            } catch (e: Exception) {
-                logger.error("Could not check for a new version of Clans.", e)
+            } catch (exception: Exception) {
+                logger.error("Could not check for a new version of Clans.", exception)
             }
         }
     }
@@ -53,8 +53,8 @@ class VersionChecker(
             connection.inputStream.bufferedReader().use { reader ->
                 reader.readLine()?.trim()
             }
-        } catch (e: Exception) {
-            this.logger.error("Could not fetch version file.", e)
+        } catch (exception: Exception) {
+            this.logger.error("Could not fetch version file.", exception)
             null
         }
     }

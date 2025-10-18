@@ -15,3 +15,4 @@ dependencies {
     implementation("com.zaxxer:HikariCP:5.0.1")
     runtimeOnly("com.mysql:mysql-connector-j:8.0.33")
 }
+

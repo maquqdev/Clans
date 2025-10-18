@@ -6,7 +6,7 @@ import org.bukkit.event.HandlerList
 
 class ClanCreateEvent(
     val clan: Clan
-) : Event() {
+) : Event(true) {
 
     override fun getHandlers(): HandlerList = HANDLERS
 
