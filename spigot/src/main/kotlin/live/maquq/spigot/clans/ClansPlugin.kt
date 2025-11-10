@@ -7,6 +7,15 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
 import live.maquq.api.data.DataSource
 import live.maquq.api.user.points.Points
+import live.maquq.spigot.clans.bootstrap.modules.CommandsModule
+import live.maquq.spigot.clans.bootstrap.modules.ConfigModule
+import live.maquq.spigot.clans.bootstrap.modules.DataSourceModule
+import live.maquq.spigot.clans.bootstrap.modules.ListenersModule
+import live.maquq.spigot.clans.bootstrap.modules.ManagersModule
+import live.maquq.spigot.clans.bootstrap.modules.PointsModule
+import live.maquq.spigot.clans.bootstrap.modules.PreloadModule
+import live.maquq.spigot.clans.bootstrap.modules.TasksModule
+import live.maquq.spigot.clans.bootstrap.modules.VersionCheckModule
 import live.maquq.spigot.gui.manager.InventoryManager
 import live.maquq.spigot.clans.commands.ClanCommand
 import live.maquq.spigot.clans.commands.PlayerCommand
@@ -66,12 +75,14 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var mainConfig: Config<PluginConfiguration>
     private lateinit var guiConfig: Config<GuiConfiguration>
 
-    private lateinit var liteCommands: LiteCommands<CommandSender>
-
     private lateinit var userManager: UserManager
     private lateinit var clanManager: ClanManager
     private lateinit var pointsManager: PointsManager
     private lateinit var inventoryManager: InventoryManager
+
+    // Modular bootstrap
+    private lateinit var initializer: live.maquq.spigot.clans.bootstrap.ModuleInitializer
+    private lateinit var ctx: live.maquq.spigot.clans.bootstrap.PluginContext
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
@@ -85,212 +96,46 @@ class ClansPlugin : JavaPlugin() {
         """.trimIndent()
         )
 
-        this.miniText = MiniText.builder()
-            .enableFormatter(
-                FormatterType.LEGACY,
-                FormatterType.NAMED_COLORS,
-                FormatterType.HEX,
-                FormatterType.NEW_LINES,
-                FormatterType.DECORATIONS,
-                FormatterType.RESET
-            )
-            .build()
-
-        this.mainConfig = Config(
-            PluginConfiguration::class.java,
-            File(
-                this.dataFolder,
-                "config.json"
+        this.ctx = live.maquq.spigot.clans.bootstrap.PluginContext(this, this.logger, this.scope)
+        this.initializer = live.maquq.spigot.clans.bootstrap.ModuleInitializer(
+            listOf(
+                ConfigModule(),
+                DataSourceModule(),
+                PointsModule(),
+                ManagersModule(),
+                ListenersModule(),
+                PreloadModule(),
+                TasksModule(),
+                CommandsModule(),
+                VersionCheckModule()
             ),
             this.logger
         )
 
-        this.guiConfig = Config(
-            GuiConfiguration::class.java,
-            File(
-                this.dataFolder,
-                "guiConfiguration.json"
-            ),
-            this.logger
-        )
+        runBlocking { initializer.enableAll(ctx) }
 
-        this.dataSource = this.initializeDataSource(mainConfig.get)
-        this.points = this.initializePoints(mainConfig.get)
-
-        if (!this.setupDataSource()) {
-            this.logger.error("Connection to database failed. Change database login credentials or use FLAT :)")
-            this.server.pluginManager.disablePlugin(this)
-            return
-        }
-
-        this.setupManagers()
-
-        this.registerListeners()
-        VersionChecker(
-            this,
-            logger,
-            scope
-        ).check()
-
-        this.loadClansToCache()
-        this.runTasks()
-        this.loadCommands()
+        this.miniText = ctx.miniText
+        this.mainConfig = ctx.mainConfig
+        this.guiConfig = ctx.guiConfig
+        this.dataSource = ctx.dataSource
+        this.points = ctx.points
+        this.userManager = ctx.userManager
+        this.clanManager = ctx.clanManager
+        this.pointsManager = ctx.pointsManager
+        this.inventoryManager = ctx.inventoryManager
 
         this.logger.info("Plugin has been successfully loaded in ${System.currentTimeMillis() - startTime}ms!")
     }
 
     override fun onDisable() {
-        this.mainConfig.shutdown()
-        this.dataSource.disconnect()
+        runBlocking {
+            if (this@ClansPlugin::initializer.isInitialized && this@ClansPlugin::ctx.isInitialized) {
+                initializer.disableAll(ctx)
+            }
+        }
         this.logger.shutdown()
-        this.job.cancel() //need to cancel slur...🌹🌺🌺
+        this.job.cancel()
 
         super.getLogger().info("Plugin has been successfully disabled!")
-    }
-
-    private fun initializeDataSource(config: PluginConfiguration): DataSource {
-        return when (config.storage) {
-            StorageType.FLAT -> FlatDataSource(this.dataFolder)
-            StorageType.MYSQL -> MySqlDataSource(
-                mapOf(
-                    "host" to config.mysql.host,
-                    "port" to config.mysql.port,
-                    "database" to config.mysql.database,
-                    "username" to config.mysql.username,
-                    "password" to config.mysql.password
-                )
-            )
-
-            StorageType.MONGODB -> MongoDataSource(config.mongo.connectionString)
-        }
-    }
-
-    private fun initializePoints(mainConfig: PluginConfiguration): Points {
-        return when (mainConfig.clanSettings.pointsConfiguration.pointsType) {
-            PointsType.COMPOSITE -> CompositePoints(mainConfig.clanSettings.proportionalPointsConfiguration)
-            PointsType.SKILL_BASED -> SkillBasedPoints(mainConfig.clanSettings.skillBasedPointsConfiguration)
-        }
-    }
-
-    private fun setupDataSource(): Boolean {
-        return runCatching {
-            this.dataSource.connect()
-            this.logger.info("Successfully connected to database! (${mainConfig.get.storage})")
-        }.onFailure {
-            this.logger.error("Cannot connect to database, check configuration please!", it)
-        }.isSuccess
-    }
-
-    private fun loadClansToCache() {
-        this.scope.launch {
-            clanManager.preloadAllClansToCache()
-        }
-    }
-
-    private fun setupManagers() {
-        this.userManager = UserManager(
-            dataSource = this.dataSource,
-            logger = this.logger,
-            scope = this.scope,
-            mainConfig = this.mainConfig.get
-        )
-
-        this.clanManager = ClanManager(
-            dataSource = this.dataSource,
-            userManager = this.userManager,
-            mainConfig = this.mainConfig.get,
-            logger = this.logger
-        )
-
-        this.pointsManager = PointsManager(
-            points = this.points
-        )
-
-        this.inventoryManager = InventoryManager(
-            this
-        )
-
-        this.inventoryManager.initialize()
-    }
-
-    private fun loadCommands() {
-        this.liteCommands = LiteBukkitFactory.builder()
-            .missingPermission(
-                InsufficientPermissionHandler(
-                    this.miniText,
-                    this.mainConfig.get
-                )
-            )
-            .invalidUsage(
-                InvalidUsageHandler(
-                    this.miniText,
-                    this.mainConfig.get
-                )
-            )
-            .commands(
-                ClanCommand(
-                    miniText = this.miniText,
-                    mainConfig = this.mainConfig.get,
-                    scope = this.scope,
-                    clanManager = this.clanManager,
-                    userManager = this.userManager,
-                    inventoryManager = this.inventoryManager,
-                    guiConfiguration = guiConfig.get
-                ),
-
-                PlayerCommand(
-                    miniText = this.miniText,
-                    scope = this.scope,
-                    mainConfig = this.mainConfig.get,
-                    userManager = this.userManager
-                )
-            )
-            .build()
-    }
-
-    private fun registerListeners() {
-        val playerJoinListener = PlayerJoinListener(
-            this.userManager,
-            this.scope
-        )
-        val playerQuitListener = PlayerQuitListener(
-            this.userManager
-        )
-        val playerDeathListener = PlayerDeathListener(
-            this.scope,
-            this.miniText,
-            this.mainConfig.get.messages.playerDeath,
-            this.pointsManager,
-            this.userManager,
-            this.clanManager
-        )
-        val playerInteractEntityListener = PlayerInteractEntityListener(
-            this.userManager,
-            this.scope,
-            this.miniText,
-            this.mainConfig.get
-        )
-
-        this.server.pluginManager.let { pluginManager ->
-            pluginManager.registerEvents(playerJoinListener, this)
-            pluginManager.registerEvents(playerQuitListener, this)
-            pluginManager.registerEvents(playerDeathListener, this)
-            pluginManager.registerEvents(playerInteractEntityListener, this)
-        }
-    }
-
-
-    private fun runTasks() {
-        Bukkit.getScheduler().runTaskTimerAsynchronously(
-            this,
-            DataSaveTask(
-                this.scope,
-                this.userManager,
-                this.clanManager,
-                this.logger
-            ),
-            0L,
-            20*60*15L
-        )
     }
 }

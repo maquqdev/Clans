@@ -13,6 +13,10 @@ spigot/run
 .gitattributes
 build
 **/build
+*/run
+*/build
+
+.fleet
 gradle
 gradlew.bat
 gradlew
