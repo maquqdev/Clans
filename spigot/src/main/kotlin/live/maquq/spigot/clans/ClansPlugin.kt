@@ -26,9 +26,11 @@ import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.points.PointsManager
 import live.maquq.spigot.clans.manager.points.impl.CompositePoints
 import live.maquq.spigot.clans.manager.points.impl.SkillBasedPoints
+import live.maquq.spigot.clans.task.DataSaveTask
 import live.maquq.storage.impl.FlatDataSource
 import live.maquq.storage.impl.MongoDataSource
 import live.maquq.storage.impl.MySqlDataSource
+import org.bukkit.Bukkit
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -37,6 +39,9 @@ class ClansPlugin : JavaPlugin() {
 
     /*
         TODO
+
+        Save wszystkich userow i clan
+
        TODO Załadować dana il. użytkowników do topki (np. top 50)
        TODO VaultUnlocked hook żeby robić upgrade size klanu
        TODO Możliwość knockowania klanowiczów bez dmg?
@@ -58,8 +63,6 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var dataSource: DataSource
     private lateinit var points: Points
 
-//    private lateinit var brokerClient: BrokerClient
-
     private lateinit var mainConfig: Config<PluginConfiguration>
     private lateinit var guiConfig: Config<GuiConfiguration>
 
@@ -69,12 +72,12 @@ class ClansPlugin : JavaPlugin() {
     private lateinit var clanManager: ClanManager
     private lateinit var pointsManager: PointsManager
     private lateinit var inventoryManager: InventoryManager
-//    private lateinit var subscribeManager: SubscribeManager
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
         this.logger.info(
-            """\n
+            """
+                
              ／l、         
            （ﾟ､ ｡７           Thanks for using
             l、ﾞ~ヽ              my plugin!
@@ -122,9 +125,6 @@ class ClansPlugin : JavaPlugin() {
 
         this.setupManagers()
 
-        if (this.mainConfig.get.broker.enabled)
-            this.setupBroker()
-
         this.registerListeners()
         VersionChecker(
             this,
@@ -133,6 +133,7 @@ class ClansPlugin : JavaPlugin() {
         ).check()
 
         this.loadClansToCache()
+        this.runTasks()
         this.loadCommands()
 
         this.logger.info("Plugin has been successfully loaded in ${System.currentTimeMillis() - startTime}ms!")
@@ -143,7 +144,6 @@ class ClansPlugin : JavaPlugin() {
         this.dataSource.disconnect()
         this.logger.shutdown()
         this.job.cancel() //need to cancel slur...🌹🌺🌺
-//        this.brokerClient.disconnect()
 
         super.getLogger().info("Plugin has been successfully disabled!")
     }
@@ -181,23 +181,6 @@ class ClansPlugin : JavaPlugin() {
         }.isSuccess
     }
 
-    private fun setupBroker() = runBlocking {
-        //Soon update
-//        val brokerConfiguration = mainConfig.get.broker
-//        brokerClient = BrokerClient(
-//            brokerConfiguration.url,
-//            brokerConfiguration.username,
-//            brokerConfiguration.password
-//        )
-//
-//        if (!brokerClient.connect().get()) {
-//            logger.error("Can't connect to message broker, synchronize function won't work.")
-//            return@runBlocking
-//        }
-//
-//        subscribeManager.subscribe(brokerClient)
-    }
-
     private fun loadClansToCache() {
         this.scope.launch {
             clanManager.preloadAllClansToCache()
@@ -213,7 +196,6 @@ class ClansPlugin : JavaPlugin() {
         )
 
         this.clanManager = ClanManager(
-            plugin = this,
             dataSource = this.dataSource,
             userManager = this.userManager,
             mainConfig = this.mainConfig.get,
@@ -289,10 +271,26 @@ class ClansPlugin : JavaPlugin() {
             this.mainConfig.get
         )
 
-        val pluginManager = this.server.pluginManager
-        pluginManager.registerEvents(playerJoinListener, this)
-        pluginManager.registerEvents(playerQuitListener, this)
-        pluginManager.registerEvents(playerDeathListener, this)
-        pluginManager.registerEvents(playerInteractEntityListener, this)
+        this.server.pluginManager.let { pluginManager ->
+            pluginManager.registerEvents(playerJoinListener, this)
+            pluginManager.registerEvents(playerQuitListener, this)
+            pluginManager.registerEvents(playerDeathListener, this)
+            pluginManager.registerEvents(playerInteractEntityListener, this)
+        }
+    }
+
+
+    private fun runTasks() {
+        Bukkit.getScheduler().runTaskTimerAsynchronously(
+            this,
+            DataSaveTask(
+                this.scope,
+                this.userManager,
+                this.clanManager,
+                this.logger
+            ),
+            0L,
+            20*60*15L
+        )
     }
 }

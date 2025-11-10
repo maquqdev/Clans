@@ -86,11 +86,14 @@ class UserManager(
             .replace("[POINTS]", targetUser.points.toString())
             .replace("[DEATHS]", targetUser.deaths.toString())
             .replace("[KILLS]", targetUser.kills.toString())
-            .replace("[COLEADER]", "")
             .replace("[KD]", kdFormatted)
 
         miniText.deserialize(message).component().let {
             player.sendMessage(it)
         }
+    }
+
+    fun all(): List<User> {
+        return this.userCache.values.toList()
     }
 }

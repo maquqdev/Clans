@@ -22,21 +22,23 @@ class InvalidUsageHandler(
         val sender = invocation!!.sender()
         val schematic = result!!.schematic
         if (schematic.isOnlyFirst) {
-            val translatedCorrectUsage = miniText.deserialize(
+            this.miniText.deserialize(
                 this.pluginConfiguration.messages.correctUsage
                     .replace(
                         "[CORRECT]",
                         schematic.first()
                     )
-            ).component()
-            sender.sendMessage(translatedCorrectUsage)
+            ).component().let {
+                sender.sendMessage(it)
+            }
             return
         }
 
-        val translatedCorrectUsage = miniText.deserialize(
+        this.miniText.deserialize(
             this.pluginConfiguration.messages.correctUsages
-        ).component()
-        sender.sendMessage(translatedCorrectUsage)
+        ).component().let {
+            sender.sendMessage(it)
+        }
         for (scheme in schematic.all()) {
             sender.sendMessage("- $scheme")
         }

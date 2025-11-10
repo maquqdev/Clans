@@ -11,7 +11,7 @@ import java.io.File
 import java.util.UUID
 
 
-class FlatDataSource(private val dataFolder: File) : DataSource {
+class FlatDataSource(dataFolder: File) : DataSource {
 
     private val userFolder = File(dataFolder, "users")
     private val clanFolder = File(dataFolder, "clans")

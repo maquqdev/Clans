@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 class ClanManager(
-    private val plugin: JavaPlugin,
     private val dataSource: DataSource,
     private val userManager: UserManager,
     private val mainConfig: PluginConfiguration,
@@ -50,14 +49,14 @@ class ClanManager(
     }
 
     suspend fun saveClan(clan: Clan) {
-        this.logger.debug("Saving ${clan.tag} to database and cache...")
+        this.logger.debug("Saving '${clan.tag}' to database and cache...")
         this.dataSource.saveClan(clan)
         this.clanCache[clan.tag] = clan
-        this.logger.debug("Saved ${clan.tag} to database and cache!")
+        this.logger.debug("Saved '${clan.tag}' to database and cache!")
     }
 
     suspend fun deleteClan(clan: Clan) {
-        this.logger.debug("Deleting clan ${clan.tag} from database and cache...")
+        this.logger.debug("Deleting clan '${clan.tag}' from database and cache...")
 
         for (memberUuid in clan.members.keys) {
             val user = this.userManager.getUser(memberUuid)
@@ -80,7 +79,7 @@ class ClanManager(
         allClans.forEach { clan ->
             this.clanCache[clan.tag] = clan
         }
-        this.logger.debug("Loaded ${allClans.size} clans to cache.")
+        this.logger.debug("Loaded '${allClans.size}' clans to cache.")
     }
 
     fun createNewClan(tag: String, owner: User): Clan {
@@ -90,7 +89,8 @@ class ClanManager(
             tag = tag,
             ownerUuid = owner.uuid,
             members = mutableMapOf(owner.uuid to ClanRole.LEADER),
-            maxSize = this.mainConfig.clanSettings.defaultSize
+            maxSize = this.mainConfig.clanSettings.defaultSize,
+            pointsMultiplier = this.mainConfig.clanSettings.defaultPointsMultiplier
         )
 
         Bukkit.getPluginManager().callEvent(ClanCreateEvent(clan))
@@ -142,7 +142,7 @@ class ClanManager(
 
         Bukkit.getPluginManager().callEvent(UserJoinClanEvent(user, clan))
 
-        this.logger.debug("Player ${user.uuid} joined to clan ${clan.tag}")
+        this.logger.debug("Player '${user.uuid}' joined to clan ${clan.tag}")
         return true
     }
 
@@ -161,5 +161,9 @@ class ClanManager(
         }
 
         return totalPoints / clan.members.size
+    }
+
+    fun all(): List<Clan> {
+        return this.clanCache.values.toList()
     }
 }

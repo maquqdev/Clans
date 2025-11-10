@@ -1,7 +1,11 @@
 package live.maquq.spigot.clans.menu
 
 import com.bruhdows.minitext.MiniText
+import kotlinx.coroutines.CoroutineScope
 import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
+import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
+import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.gui.builder.ItemBuilder
 import live.maquq.spigot.gui.manager.InventoryManager
 import org.bukkit.Material
@@ -10,7 +14,11 @@ import org.bukkit.entity.Player
 class ClanMenu(
     private val inventoryManager: InventoryManager,
     private val miniText: MiniText,
-    private val guiConfiguration: GuiConfiguration
+    private val guiConfiguration: GuiConfiguration,
+    private val clanManager: ClanManager,
+    private val userManager: UserManager,
+    private val mainConfig: PluginConfiguration,
+    private val scope: CoroutineScope
 ) {
 
     private var minecartPosition = 0
@@ -74,7 +82,11 @@ class ClanMenu(
                 ClanUpgradeMenu(
                     this.inventoryManager,
                     this.miniText,
-                    this.guiConfiguration
+                    this.guiConfiguration,
+                    this.mainConfig,
+                    this.clanManager,
+                    this.userManager,
+                    this.scope
                 ).open(player)
             }
         }

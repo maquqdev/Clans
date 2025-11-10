@@ -10,18 +10,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import live.maquq.api.common.ClanQuitCause
-import live.maquq.api.events.user.UserJoinClanEvent
 import live.maquq.api.events.user.UserQuitClanEvent
 import live.maquq.api.user.clan.ClanRole
 import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
-import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.manager.UserManager
+import live.maquq.spigot.clans.manager.clan.ClanManager
 import live.maquq.spigot.clans.menu.ClanMenu
 import live.maquq.spigot.gui.manager.InventoryManager
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 
 @Command(name = "klan")
 class ClanCommand(
@@ -178,7 +176,6 @@ class ClanCommand(
     ) {
         this.scope.launch {
             val user = userManager.getUser(player.uniqueId)
-
             if (user.clanTag != null) {
                 miniText.deserialize(mainConfig.messages.alreadyInClan).component().let {
                     player.sendMessage(it)
@@ -436,10 +433,32 @@ class ClanCommand(
     }
 
     @Execute(name = "panel")
-    fun executeTest(@Context player: Player) {
+    fun executePanel(@Context player: Player) {
         this.scope.launch {
-            ClanMenu(inventoryManager, miniText, guiConfiguration)
-                .open(player)
+            val user = userManager.getUser(player.uniqueId)
+            val clanTag = user.clanTag ?: run {
+                miniText.deserialize(mainConfig.messages.notInAnyClan).component().let { message ->
+                    player.sendMessage(message)
+                }
+                return@launch
+            }
+
+            val clan = clanManager.getClan(clanTag) ?: run {
+                miniText.deserialize(mainConfig.messages.clanNotFound).component().let { message ->
+                    player.sendMessage(message)
+                }
+                return@launch
+            }
+
+            ClanMenu(
+                inventoryManager = inventoryManager,
+                miniText = miniText,
+                guiConfiguration = guiConfiguration,
+                clanManager = clanManager,
+                userManager = userManager,
+                mainConfig = mainConfig,
+                scope = scope
+            ).open(player)
         }
     }
 }

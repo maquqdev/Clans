@@ -101,12 +101,11 @@ class VersionChecker(
 
     private fun logUpdateMessage(local: String, remote: String, commitInfo: CommitInfo) {
         this.logger.warn(" ")
-        this.logger.warn("<gold> /\\_/\\   <gray>Clans - New update available!</gold>")
-        this.logger.warn("<gold>( o.o )</gold> Your version: <red>$local</red>")
-        this.logger.warn("<gold> > ^ < </gold> New version: <green>$remote</green>")
-        this.logger.warn("<aqua>      Latest changes: ${commitInfo.title}")
-        this.logger.warn("<gray>      Commit: ${commitInfo.shortSha}")
-        this.logger.warn("<gold>      Download: https://github.com/maquqdev/Clans/releases/latest")
+        this.logger.warn("<blue> /\\_/\\   <blue>Clans - New update available!")
+        this.logger.warn("<blue>( o.o )  <white>Your version: <blue>$local")
+        this.logger.warn("<blue> > ^ <   <white>New version: <blue>$remote")
+        this.logger.warn("      Changes:  <blue>${commitInfo.title}")
+        this.logger.warn("      Download: <blue>https://github.com/maquqdev/Clans/releases/latest")
         this.logger.warn(" ")
     }
 
