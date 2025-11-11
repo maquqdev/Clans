@@ -34,6 +34,6 @@ class PluginContext(
     lateinit var clanManager: ClanManager
     lateinit var pointsManager: PointsManager
 
-    var liteCommands: LiteCommands<CommandSender>? = null
+    lateinit var liteCommands: LiteCommands<CommandSender>
     val scheduledTaskIds: MutableList<Int> = mutableListOf()
 }

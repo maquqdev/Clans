@@ -37,6 +37,14 @@ class DataSourceModule : PluginModule {
     }
 
     override suspend fun disable(ctx: PluginContext) {
+        ctx.userManager.all().forEach { user ->
+            ctx.userManager.saveUser(user)
+        }
+
+        ctx.clanManager.all().forEach { clan ->
+            ctx.clanManager.saveClan(clan)
+        }
+
         runCatching { ctx.dataSource.disconnect() }
     }
 }

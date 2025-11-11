@@ -14,7 +14,7 @@ class CommandsModule : PluginModule {
     override val name: String = "Commands"
 
     override suspend fun enable(ctx: PluginContext) {
-        val builder = LiteBukkitFactory.builder()
+        val commands: LiteCommands<CommandSender> = LiteBukkitFactory.builder()
             .missingPermission(
                 InsufficientPermissionHandler(
                     ctx.miniText,
@@ -43,14 +43,12 @@ class CommandsModule : PluginModule {
                     mainConfig = ctx.mainConfig.get,
                     userManager = ctx.userManager
                 )
-            )
+            ).build()
 
-        val commands: LiteCommands<CommandSender> = builder.build()
         ctx.liteCommands = commands
     }
 
     override suspend fun disable(ctx: PluginContext) {
-        ctx.liteCommands!!.unregister()
-        ctx.liteCommands = null
+        ctx.liteCommands.unregister()
     }
 }

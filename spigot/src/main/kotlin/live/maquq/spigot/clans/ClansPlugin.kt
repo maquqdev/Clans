@@ -7,6 +7,8 @@ import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import kotlinx.coroutines.*
 import live.maquq.api.data.DataSource
 import live.maquq.api.user.points.Points
+import live.maquq.spigot.clans.bootstrap.ModuleInitializer
+import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.modules.CommandsModule
 import live.maquq.spigot.clans.bootstrap.modules.ConfigModule
 import live.maquq.spigot.clans.bootstrap.modules.DataSourceModule
@@ -67,22 +69,8 @@ class ClansPlugin : JavaPlugin() {
         true
     )
 
-    private lateinit var miniText: MiniText
-
-    private lateinit var dataSource: DataSource
-    private lateinit var points: Points
-
-    private lateinit var mainConfig: Config<PluginConfiguration>
-    private lateinit var guiConfig: Config<GuiConfiguration>
-
-    private lateinit var userManager: UserManager
-    private lateinit var clanManager: ClanManager
-    private lateinit var pointsManager: PointsManager
-    private lateinit var inventoryManager: InventoryManager
-
-    // Modular bootstrap
-    private lateinit var initializer: live.maquq.spigot.clans.bootstrap.ModuleInitializer
-    private lateinit var ctx: live.maquq.spigot.clans.bootstrap.PluginContext
+    private lateinit var initializer: ModuleInitializer
+    private lateinit var ctx: PluginContext
 
     override fun onEnable() {
         val startTime = System.currentTimeMillis()
@@ -96,8 +84,12 @@ class ClansPlugin : JavaPlugin() {
         """.trimIndent()
         )
 
-        this.ctx = live.maquq.spigot.clans.bootstrap.PluginContext(this, this.logger, this.scope)
-        this.initializer = live.maquq.spigot.clans.bootstrap.ModuleInitializer(
+        this.ctx = PluginContext(
+            this,
+            this.logger,
+            this.scope
+        )
+        this.initializer = ModuleInitializer(
             listOf(
                 ConfigModule(),
                 DataSourceModule(),
@@ -113,16 +105,6 @@ class ClansPlugin : JavaPlugin() {
         )
 
         runBlocking { initializer.enableAll(ctx) }
-
-        this.miniText = ctx.miniText
-        this.mainConfig = ctx.mainConfig
-        this.guiConfig = ctx.guiConfig
-        this.dataSource = ctx.dataSource
-        this.points = ctx.points
-        this.userManager = ctx.userManager
-        this.clanManager = ctx.clanManager
-        this.pointsManager = ctx.pointsManager
-        this.inventoryManager = ctx.inventoryManager
 
         this.logger.info("Plugin has been successfully loaded in ${System.currentTimeMillis() - startTime}ms!")
     }
