@@ -10,7 +10,7 @@ class PreloadModule : PluginModule {
     override suspend fun enable(ctx: PluginContext) {
         ctx.scope.launch {
             ctx.clanManager.preloadAllClansToCache()
-            TODO("Load every user")
+            ctx.userManager.loadTopUsers()
         }
     }
 

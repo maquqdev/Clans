@@ -74,7 +74,7 @@ class ClanManager(
     }
 
     suspend fun preloadAllClansToCache() {
-        this.logger.debug("Loading every clan to cache...")
+        this.logger.debug("Loading 'every clan' to cache...")
         val allClans = this.dataSource.getAllClans()
         allClans.forEach { clan ->
             this.clanCache[clan.tag] = clan

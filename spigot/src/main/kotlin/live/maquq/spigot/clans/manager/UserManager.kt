@@ -46,6 +46,13 @@ class UserManager(
         this.userCache[user.uuid] = user
     }
 
+    suspend fun loadTopUsers() {
+        this.logger.debug("Loading 'top users' (50)...")
+        this.dataSource.getTopUsers(50).forEach { user ->
+            this.userCache[user.uuid] = user
+        }
+    }
+
     fun handlePlayerQuit(uuid: UUID) {
         this.scope.launch(Dispatchers.IO + CoroutineExceptionHandler { _, exception ->
             this.logger.error("Failed to save user data for player ${uuid}: ${exception.message}")

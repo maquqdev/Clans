@@ -2,11 +2,7 @@ package live.maquq.spigot.clans.bootstrap.modules
 
 import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.PluginModule
-import live.maquq.spigot.clans.listener.PlayerDeathListener
-import live.maquq.spigot.clans.listener.PlayerInteractEntityListener
-import live.maquq.spigot.clans.listener.PlayerJoinListener
-import live.maquq.spigot.clans.listener.PlayerQuitListener
-import org.bukkit.Bukkit
+import live.maquq.spigot.clans.listener.*
 
 class ListenersModule : PluginModule {
     override val name: String = "Listeners"
@@ -34,6 +30,14 @@ class ListenersModule : PluginModule {
                 ctx.scope,
                 ctx.miniText,
                 ctx.mainConfig.get
+            ),
+            plugin
+        )
+        pm.registerEvents(
+            EntityDamageEntityListener(
+                ctx.userManager,
+                ctx.clanManager,
+                ctx.scope
             ),
             plugin
         )

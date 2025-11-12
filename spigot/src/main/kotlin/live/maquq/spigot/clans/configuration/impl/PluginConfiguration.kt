@@ -39,22 +39,15 @@ class ClanSettings : ConfigTemplate {
     var item: ItemStack = ItemStack(Material.STONE, 1) //item for upgrade ofc
     var maxSize: Int = 7
 
-    // Per-level item costs for SIZE upgrades (level 1 means defaultSize -> defaultSize + 1)
-    // If next level exceeds this list, the last value will be used as the repeating cost.
     var sizeUpgradeCosts: MutableList<Int> = mutableListOf(4, 6)
 
-    // Points multiplier upgrade settings
     var defaultPointsMultiplier: Double = 1.0
     var maxPointsMultiplier: Double = 2.0
     
-    // Admin-configurable step for multiplier upgrades (will be clamped to [pointsMultiplierStepMin, pointsMultiplierStepMax])
     var pointsMultiplierStep: Double = 0.1
     var pointsMultiplierStepMin: Double = 0.1
     var pointsMultiplierStepMax: Double = 0.3
 
-    // Per-level item costs for POINTS_MULTIPLE upgrades
-    // Level 1 = defaultPointsMultiplier -> defaultPointsMultiplier + step
-    // If list is shorter, the last value repeats.
     var pointsMultipleUpgradeCosts: MutableList<Int> = mutableListOf(4, 6)
 
     var pointsConfiguration: PointsConfiguration = PointsConfiguration()
@@ -135,8 +128,12 @@ class MessageSettings : ConfigTemplate {
     var leftClan: String = "[red]Opuszczono klan!"
     var requestDelete: String = "[red]Musisz wpisać ponownie ta komende, aby usunąć klan!"
 
-    // Shown when player tries to buy an upgrade without enough items in inventory
-    // Placeholders: [COST], [ITEM]
+    var pvpEnabledNow: String = "[green]PVP w twoim klanie jest teraz [bold]WŁĄCZONE"
+    var pvpDisabledNow: String = "[red]PVP w twoim klanie jest teraz [bold]WYŁĄCZONE"
+    var pvpNoPermissionToggle: String = "[red]Nie masz uprawnień, aby zmieniać status PvP w klanie"
+    var pvpMinRoleUpdated: String = "[green]Minimalna ranga do zmiany PvP: [yellow][ROLE]"
+    var pvpMinRoleOnlyLeader: String = "[red]Tylko lider może zmieniać kto może edytować PvP"
+
     var notEnoughItemsToUpgrade: String = "[red]Nie masz wystarczająco przedmiotów! Potrzebujesz [COST]x [ITEM]"
 
     var playerDeath: PlayerDeathConfiguration = PlayerDeathConfiguration()

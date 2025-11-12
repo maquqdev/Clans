@@ -8,10 +8,12 @@ import live.maquq.api.data.DataSource
 import live.maquq.api.user.User
 import live.maquq.api.user.clan.Clan
 import java.io.File
-import java.util.UUID
+import java.util.*
 
 
-class FlatDataSource(dataFolder: File) : DataSource {
+class FlatDataSource(
+    dataFolder: File
+) : DataSource {
 
     private val userFolder = File(dataFolder, "users")
     private val clanFolder = File(dataFolder, "clans")
@@ -30,19 +32,21 @@ class FlatDataSource(dataFolder: File) : DataSource {
         runCatching { userFile.reader().use { gson.fromJson(it, User::class.java) } }.getOrNull()
     }
 
-    override suspend fun saveUser(user: User) {
+    override suspend fun saveUser(user: User): Int {
         withContext(Dispatchers.IO) {
             val userFile = File(userFolder, "${user.uuid}.json")
             runCatching { userFile.writer().use { gson.toJson(user, it) } }
                 .onFailure { it.printStackTrace() }
         }
+        return 0
     }
 
-    override suspend fun removeUser(user: User) {
+    override suspend fun removeUser(user: User): Int {
         withContext(Dispatchers.IO) {
             runCatching { File(userFolder, "${user.uuid}.json").delete() }
                 .onFailure { it.printStackTrace() }
         }
+        return 0
     }
 
     override suspend fun loadClan(tag: String): Clan? = withContext(Dispatchers.IO) {
@@ -59,7 +63,7 @@ class FlatDataSource(dataFolder: File) : DataSource {
         }
     }
 
-    override suspend fun deleteClan(tag: String) {
+    override suspend fun deleteClan(tag: String): Int {
         withContext(Dispatchers.IO) {
             File(clanFolder, "$tag.json").delete()
 
@@ -72,6 +76,7 @@ class FlatDataSource(dataFolder: File) : DataSource {
                 }
             }
         }
+        return 0
     }
 
     override suspend fun getAllClans(): List<Clan> = withContext(Dispatchers.IO) {
@@ -79,5 +84,15 @@ class FlatDataSource(dataFolder: File) : DataSource {
             ?.mapNotNull { file ->
                 runCatching { file.reader().use { gson.fromJson(it, Clan::class.java) } }.getOrNull()
             } ?: emptyList()
+    }
+
+    override suspend fun getTopUsers(limit: Int): List<User> = withContext(Dispatchers.IO) {
+        userFolder.listFiles { _, name -> name.endsWith(".json") }
+            ?.mapNotNull { file ->
+                runCatching { file.reader().use { gson.fromJson(it, User::class.java) } }.getOrNull()
+            }
+            ?.sortedByDescending { it.points }
+            ?.take(limit)
+            ?: emptyList()
     }
 }

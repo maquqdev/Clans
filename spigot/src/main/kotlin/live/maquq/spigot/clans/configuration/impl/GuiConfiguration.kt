@@ -2,6 +2,7 @@ package live.maquq.spigot.clans.configuration.impl
 
 import live.maquq.spigot.clans.configuration.ConfigTemplate
 import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
 
 class GuiConfiguration : ConfigTemplate {
 
@@ -21,11 +22,27 @@ class GuiConfiguration : ConfigTemplate {
                 " "
             )
         }
+
+        var minRoleItem: MinRoleItem = MinRoleItem()
+
+        class MinRoleItem : ConfigTemplate {
+            var minRoleMaterial: Material = Material.NAME_TAG
+            var minRoleTitle: String = "Min. rola do zmiana pvp: [MIN-ROLE]"
+            var minRoleLore: List<String> = listOf()
+            var minRoleLoreOnlyLeader: List<String> = listOf(
+                "[red]Tylko lider może zmienić minimalna role",
+                "[red]do zmiany stanu pvp"
+            )
+        }
     }
+
+//    class PvPItem : ConfigTemplate {
+//        var
+//    }
 
     class UpgradeMenu : ConfigTemplate {
         var title: String = "[gold]Ulepszenia klanu"
-        var rows: Int = 3 // inventory rows (1-6)
+        var rows: Int = 3
         var background: Material = Material.GRAY_STAINED_GLASS_PANE
 
         var sizeItem: UpgradeItem = UpgradeItem(

@@ -5,12 +5,13 @@ import com.mongodb.client.MongoClients
 import com.mongodb.client.MongoCollection
 import com.mongodb.client.model.Filters
 import com.mongodb.client.model.ReplaceOptions
+import com.mongodb.client.model.Sorts
 import com.mongodb.client.model.Updates
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import live.maquq.api.data.DataSource
-import live.maquq.api.user.clan.Clan
 import live.maquq.api.user.User
+import live.maquq.api.user.clan.Clan
 import java.util.*
 
 class MongoDataSource(private val connectionString: String) : DataSource {
@@ -37,16 +38,18 @@ class MongoDataSource(private val connectionString: String) : DataSource {
         usersCollection.find(Filters.eq("_id", uuid)).first()
     }
 
-    override suspend fun saveUser(user: User) {
+    override suspend fun saveUser(user: User): Int {
         withContext(Dispatchers.IO) {
             usersCollection.replaceOne(Filters.eq("_id", user.uuid), user, ReplaceOptions().upsert(true))
         }
+        return 0
     }
 
-    override suspend fun removeUser(user: User) {
+    override suspend fun removeUser(user: User): Int {
         withContext(Dispatchers.IO) {
             usersCollection.deleteOne(Filters.eq("_id", user.uuid))
         }
+        return 0
     }
 
     override suspend fun loadClan(tag: String): Clan? = withContext(Dispatchers.IO) {
@@ -59,7 +62,7 @@ class MongoDataSource(private val connectionString: String) : DataSource {
         }
     }
 
-    override suspend fun deleteClan(tag: String) {
+    override suspend fun deleteClan(tag: String): Int {
         withContext(Dispatchers.IO) {
             clansCollection.deleteOne(Filters.eq("_id", tag))
             usersCollection.updateMany(
@@ -67,9 +70,17 @@ class MongoDataSource(private val connectionString: String) : DataSource {
                 Updates.unset("clanTag")
             )
         }
+        return 0
     }
 
     override suspend fun getAllClans(): List<Clan> = withContext(Dispatchers.IO) {
         clansCollection.find().toList()
+    }
+
+    override suspend fun getTopUsers(limit: Int): List<User> = withContext(Dispatchers.IO) {
+        usersCollection.find()
+            .sort(Sorts.descending("points"))
+            .limit(limit)
+            .toList()
     }
 }

@@ -8,5 +8,7 @@ data class Clan(
     var ownerUuid: UUID,
     var members: MutableMap<UUID, ClanRole>,
     var maxSize: Int,
-    var pointsMultiplier: Double=1.0
+    var pointsMultiplier: Double = 1.0,
+    var pvpEnabled: Boolean = true,
+    var pvpEditMinRole: ClanRole = ClanRole.COLEADER
 )

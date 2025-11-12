@@ -15,7 +15,6 @@ import live.maquq.spigot.clans.manager.clan.UpgradeResult
 import live.maquq.spigot.gui.api.InteractiveInventory
 import live.maquq.spigot.gui.builder.ItemBuilder
 import live.maquq.spigot.gui.manager.InventoryManager
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import kotlin.math.round
 
@@ -137,7 +136,7 @@ class ClanUpgradeMenu(
         }
 
         // POINTS_MULTIPLE
-        val step = effectiveStep()
+        val step = step()
         val epsilon = 1e-9
         val pointsMaxed = clan.pointsMultiplier >= settings.maxPointsMultiplier - epsilon
         val nextPoints = round(((clan.pointsMultiplier + step).coerceAtMost(settings.maxPointsMultiplier)) * 1000.0) / 1000.0
@@ -198,15 +197,14 @@ class ClanUpgradeMenu(
 
     private fun nextPointsCost(clan: Clan, settings: ClanSettings): Int {
         val defaultMul = settings.defaultPointsMultiplier
-        val effStep = effectiveStep()
-        val currentLevelDouble = ((clan.pointsMultiplier - defaultMul) / effStep).coerceAtLeast(0.0)
+        val currentLevelDouble = ((clan.pointsMultiplier - defaultMul) / step()).coerceAtLeast(0.0)
         val nextLevelIndex = currentLevelDouble.toInt()
         val costs = settings.pointsMultipleUpgradeCosts
         val rawCost = if (costs.isEmpty()) 0 else if (nextLevelIndex < costs.size) costs[nextLevelIndex] else costs.last()
         return if (rawCost < 0) 0 else rawCost
     }
 
-    private fun effectiveStep(): Double {
+    private fun step(): Double {
         val s = mainConfig.clanSettings
         return s.pointsMultiplierStep.coerceIn(s.pointsMultiplierStepMin, s.pointsMultiplierStepMax)
     }

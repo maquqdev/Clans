@@ -66,6 +66,57 @@ class ClanCommand(
         }
     }
 
+    @Execute(name = "pvp")
+    fun pvpCommand(
+        @Context player: Player,
+        @Arg("akcja") action: String?
+    ) {
+        scope.launch {
+            val user = userManager.getUser(player.uniqueId)
+            val tag = user.clanTag
+            if (tag == null) {
+                miniText.deserialize(mainConfig.messages.notInAnyClan).component().let { player.sendMessage(it) }
+                return@launch
+            }
+            val clan = clanManager.getClan(tag) ?: run {
+                miniText.deserialize(mainConfig.messages.clanNotFound).component().let { player.sendMessage(it) }
+                return@launch
+            }
+            val role = clan.members[user.uuid]
+            if (role == null || !hasRoleAtLeast(role, clan.pvpEditMinRole)) {
+                miniText.deserialize(mainConfig.messages.pvpNoPermissionToggle).component()
+                    .let { player.sendMessage(it) }
+                return@launch
+            }
+
+            val newEnabled = when (action?.lowercase()) {
+                null, "toggle" -> !clan.pvpEnabled
+                "on", "wlacz" -> true
+                "off", "wylacz" -> false
+                else -> {
+                    miniText.deserialize(mainConfig.messages.correctUsages + "\n/clan pvp [on|off|toggle]").component()
+                        .let { player.sendMessage(it) }
+                    return@launch
+                }
+            }
+
+            clan.pvpEnabled = newEnabled
+            clanManager.saveClan(clan)
+
+            val msg = if (newEnabled) mainConfig.messages.pvpEnabledNow else mainConfig.messages.pvpDisabledNow
+            miniText.deserialize(msg).component().let { player.sendMessage(it) }
+        }
+    }
+
+    private fun hasRoleAtLeast(current: ClanRole, minimum: ClanRole): Boolean {
+        fun weight(r: ClanRole) = when (r) {
+            ClanRole.LEADER -> 3
+            ClanRole.COLEADER -> 2
+            ClanRole.MEMBER -> 1
+        }
+        return weight(current) >= weight(minimum)
+    }
+
     @Execute(name = "zapros")
     fun inviteCommand(
         @Context player: Player,

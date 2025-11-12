@@ -36,7 +36,7 @@ class ConfigModule : PluginModule {
 
         ctx.guiConfig = Config(
             GuiConfiguration::class.java,
-            File(dataFolder, "guiConfiguration.json"),
+            File(dataFolder, "gui.json"),
             logger
         )
     }
