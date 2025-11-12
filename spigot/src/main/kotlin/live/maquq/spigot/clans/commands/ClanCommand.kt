@@ -327,6 +327,13 @@ class ClanCommand(
         @Context player: Player,
         @Arg("gracz") target: Player
     ) {
+        if(player == target) {
+            this.miniText.deserialize(this.mainConfig.messages.selfPromotion).component().let {
+                player.sendMessage(it)
+            }
+            return
+        }
+
         this.scope.launch {
             val user = userManager.getUser(player.uniqueId)
             val targetUser = userManager.getUser(target.uniqueId)

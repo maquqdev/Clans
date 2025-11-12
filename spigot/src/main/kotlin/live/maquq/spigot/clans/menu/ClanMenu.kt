@@ -93,8 +93,8 @@ class ClanMenu(
             }
         }
 
-        // PvP toggle item
-        scope.launch {
+        // PvP toggle
+        this.scope.launch {
             val user = userManager.getUser(player.uniqueId)
             val tag = user.clanTag ?: return@launch
             val clan = clanManager.getClan(tag) ?: return@launch

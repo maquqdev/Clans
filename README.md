@@ -34,6 +34,7 @@
 - `/klan zastepca [gracz]` - Dodawanie zastępcy osobie z klanu
 - `/klan menu` – Otwiera menu ulepszeń, zarządzania członkami
 - `/klan usun` – Usuwanie klanu
+- `/klan pvp <on/off/toggle>` – Edytowanie PvP statusu PvP w klanie
 
 ## Konfiguracja
 Przejrzysta, prosta w JSON - zobacz sobie jak konfigurować JSON [tutaj](https://learnxinyminutes.com/docs/json/)

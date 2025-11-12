@@ -1,6 +1,7 @@
 package live.maquq.spigot.clans.configuration.impl
 
 import live.maquq.spigot.clans.configuration.ConfigTemplate
+import live.maquq.spigot.clans.configuration.Comment
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
@@ -9,6 +10,7 @@ enum class StorageType {
 }
 
 class PluginConfiguration : ConfigTemplate {
+    @Comment("Storage backend type: FLAT / MYSQL / MONGODB")
     var storage: StorageType = StorageType.FLAT
 
     var mysql: MysqlSettings = MysqlSettings()
@@ -32,22 +34,33 @@ class MongoSettings : ConfigTemplate {
 }
 
 class ClanSettings : ConfigTemplate {
+    @Comment("W ile wygasa zaproszenie do klanu (w sekundach)")
     var timeToTimeoutInvite: Int = 120
+    @Comment("Co ma oddzielać graczy w /klan info <klan>")
     var separator: String = ", "
+    @Comment("Podstawowa ilość użytkowników")
     var defaultPoints: Int = 500
+    @Comment("Podstawowa ilość użytkowników w klanie")
     var defaultSize: Int = 5
-    var item: ItemStack = ItemStack(Material.STONE, 1) //item for upgrade ofc
+    @Comment("Maksymalna ilość ulepszenia użytkowników")
     var maxSize: Int = 7
+    @Comment("Jaki ma być item do ulepszeń (/klan panel -> ulepszenia klanu)")
+    var item: ItemStack = ItemStack(Material.STONE, 1)
 
+    @Comment("Ceny ulepszenia liczby użytkowników")
     var sizeUpgradeCosts: MutableList<Int> = mutableListOf(4, 6)
 
+    @Comment("Mnożnik punktów")
     var defaultPointsMultiplier: Double = 1.0
+    @Comment("Maksymalny mnożnik punktów")
     var maxPointsMultiplier: Double = 2.0
-    
+
+    @Comment("Ile ma dawać mnożnika punktów co ulepszenie")
     var pointsMultiplierStep: Double = 0.1
     var pointsMultiplierStepMin: Double = 0.1
     var pointsMultiplierStepMax: Double = 0.3
 
+    @Comment("Ceny ulepszenia mnożnika punktów")
     var pointsMultipleUpgradeCosts: MutableList<Int> = mutableListOf(4, 6)
 
     var pointsConfiguration: PointsConfiguration = PointsConfiguration()
@@ -62,6 +75,7 @@ enum class PointsType {
 }
 
 class PointsConfiguration : ConfigTemplate {
+    @Comment("Dostępne typy: COMPOSITE / SKILL_BASED")
     var pointsType: PointsType = PointsType.SKILL_BASED
 }
 
@@ -132,7 +146,7 @@ class MessageSettings : ConfigTemplate {
     var pvpDisabledNow: String = "[red]PVP w twoim klanie jest teraz [bold]WYŁĄCZONE"
     var pvpNoPermissionToggle: String = "[red]Nie masz uprawnień, aby zmieniać status PvP w klanie"
     var pvpMinRoleUpdated: String = "[green]Minimalna ranga do zmiany PvP: [yellow][ROLE]"
-    var pvpMinRoleOnlyLeader: String = "[red]Tylko lider może zmieniać kto może edytować PvP"
+//    var pvpMinRoleOnlyLeader: String = "[red]Tylko lider może zmieniać kto może edytować PvP"
 
     var notEnoughItemsToUpgrade: String = "[red]Nie masz wystarczająco przedmiotów! Potrzebujesz [COST]x [ITEM]"
 

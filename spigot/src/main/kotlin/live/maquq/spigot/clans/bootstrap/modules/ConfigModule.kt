@@ -6,6 +6,7 @@ import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.PluginModule
 import live.maquq.spigot.clans.configuration.Config
+import live.maquq.spigot.clans.configuration.ConfigFormat
 import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import java.io.File
@@ -30,14 +31,16 @@ class ConfigModule : PluginModule {
 
         ctx.mainConfig = Config(
             PluginConfiguration::class.java,
-            File(dataFolder, "config.json"),
-            logger
+            File(dataFolder, "config.yml"),
+            logger,
+            ConfigFormat.YAML
         )
 
         ctx.guiConfig = Config(
             GuiConfiguration::class.java,
-            File(dataFolder, "gui.json"),
-            logger
+            File(dataFolder, "gui.yml"),
+            logger,
+            ConfigFormat.YAML
         )
     }
 

@@ -26,7 +26,7 @@ class DataSourceModule(
                     "username" to config.mysql.username,
                     "password" to config.mysql.password
                 ),
-                minClanSize
+                ctx.mainConfig.get.clanSettings.defaultSize
             )
             StorageType.MONGODB -> MongoDataSource(config.mongo.connectionString)
         }

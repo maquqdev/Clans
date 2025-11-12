@@ -39,6 +39,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
+    implementation("org.yaml:snakeyaml:2.0")
 }
 
 tasks {
@@ -58,6 +59,8 @@ tasks {
         relocate("com.google.protobuf", "live.maquq.libs.protobuf")
         relocate("org.json.simple", "live.maquq.libs.json")
         relocate("org.slf4j", "live.maquq.libs.slf4j")
+        relocate("org.yaml.snakeyaml", "live.maquq.libs.snakeyaml")
+        relocate("org.yaml.snakeyaml", "live.maquq.libs.snakeyaml")
 
         archiveBaseName.set("Clans")
         archiveClassifier.set("")
