@@ -28,7 +28,7 @@ class ClanUpgradeMenu(
     private val scope: CoroutineScope
 ) {
 
-    private val upgradeManager = ClanUpgradeManager(mainConfig, clanManager)
+    private val upgradeManager = ClanUpgradeManager(mainConfig)
 
     fun open(player: Player) {
         val cfg = this.guiConfiguration.upgradeMenu
@@ -137,8 +137,7 @@ class ClanUpgradeMenu(
 
         // POINTS_MULTIPLE
         val step = step()
-        val epsilon = 1e-9
-        val pointsMaxed = clan.pointsMultiplier >= settings.maxPointsMultiplier - epsilon
+        val pointsMaxed = clan.pointsMultiplier >= settings.maxPointsMultiplier - 1e-9
         val nextPoints = round(((clan.pointsMultiplier + step).coerceAtMost(settings.maxPointsMultiplier)) * 1000.0) / 1000.0
         val pointsPlaceholders = mapOf(
             "[CURRENT]" to formatDouble(clan.pointsMultiplier),
@@ -150,11 +149,15 @@ class ClanUpgradeMenu(
         )
         val pointsTitle = applyPlaceholders(if (pointsMaxed) cfg.pointsItem.disabledTitle else cfg.pointsItem.title, pointsPlaceholders)
         val pointsLore = (if (pointsMaxed) cfg.pointsItem.disabledLore else cfg.pointsItem.lore)
-            .map { applyPlaceholders(it, pointsPlaceholders) }
+            .map {
+                applyPlaceholders(it, pointsPlaceholders)
+            }
+
         val pointsStack = ItemBuilder(cfg.pointsItem.material, miniText)
             .name(pointsTitle)
             .lore(pointsLore)
             .build()
+
         menu.setItem(cfg.pointsItem.slot, pointsStack).onClick {
             it.isCancelled = true
             if (pointsMaxed) return@onClick
@@ -170,7 +173,9 @@ class ClanUpgradeMenu(
                     val msg = mainConfig.messages.notEnoughItemsToUpgrade
                         .replace("[COST]", cost.toString())
                         .replace("[ITEM]", settings.item.type.name)
-                    miniText.deserialize(msg).component().let { c -> player.sendMessage(c) }
+                    miniText.deserialize(msg).component().let { message ->
+                        player.sendMessage(message)
+                    }
                     player.closeInventory()
                 }
                 else -> {

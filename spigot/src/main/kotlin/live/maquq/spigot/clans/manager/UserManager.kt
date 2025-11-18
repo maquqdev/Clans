@@ -40,6 +40,10 @@ class UserManager(
         return userFromDb
     }
 
+    fun getCachedUser(uuid: UUID): User? {
+        return this.userCache[uuid]
+    }
+
     suspend fun saveUser(user: User) {
         this.logger.debug("Saved user ${user.uuid} to database and cache")
         this.dataSource.saveUser(user)

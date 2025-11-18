@@ -17,6 +17,5 @@ class PointsModule : PluginModule {
         }
     }
 
-    override suspend fun disable(ctx: PluginContext) {
-    }
+    override suspend fun disable(ctx: PluginContext) { }
 }

@@ -17,14 +17,16 @@ class TasksModule : PluginModule {
                 ctx.clanManager,
                 ctx.logger
             ),
-            0L,
+            20 * 60 * 15L,
             20 * 60 * 15L //15min
         ).taskId
         ctx.scheduledTaskIds += taskId
     }
 
     override suspend fun disable(ctx: PluginContext) {
-        ctx.scheduledTaskIds.forEach { Bukkit.getScheduler().cancelTask(it) }
+        ctx.scheduledTaskIds.forEach {
+            Bukkit.getScheduler().cancelTask(it)
+        }
         ctx.scheduledTaskIds.clear()
     }
 }

@@ -10,7 +10,7 @@ enum class StorageType {
 }
 
 class PluginConfiguration : ConfigTemplate {
-    @Comment("Storage backend type: FLAT / MYSQL / MONGODB")
+    @Comment("Dostępne typy baz danych do zapisu danych: FLAT / MYSQL / MONGODB")
     var storage: StorageType = StorageType.FLAT
 
     var mysql: MysqlSettings = MysqlSettings()
@@ -59,6 +59,9 @@ class ClanSettings : ConfigTemplate {
     var pointsMultiplierStep: Double = 0.1
     var pointsMultiplierStepMin: Double = 0.1
     var pointsMultiplierStepMax: Double = 0.3
+
+    @Comment("Czy ma crystale mają zadawać damage?")
+    var crystalDamage: Boolean = false
 
     @Comment("Ceny ulepszenia mnożnika punktów")
     var pointsMultipleUpgradeCosts: MutableList<Int> = mutableListOf(4, 6)

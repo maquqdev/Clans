@@ -48,6 +48,10 @@ class ClanManager(
         return clanFromDb
     }
 
+    fun getCachedClan(tag: String): Clan? {
+        return this.clanCache[tag]
+    }
+
     suspend fun saveClan(clan: Clan) {
         this.logger.debug("Saving '${clan.tag}' to database and cache...")
         this.dataSource.saveClan(clan)

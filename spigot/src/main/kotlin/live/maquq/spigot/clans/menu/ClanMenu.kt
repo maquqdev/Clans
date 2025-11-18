@@ -138,7 +138,11 @@ class ClanMenu(
             menu.setItem(
                 23,
                 ItemBuilder(minRoleItem.minRoleMaterial, miniText)
-                    .name(minRoleItem.minRoleTitle)
+                    .name(minRoleItem.minRoleTitle
+                        .replace(
+                            "[MIN-ROLE]",
+                            clan.pvpEditMinRole.name)
+                    )
                     .lore(roleLore)
                     .build()
             ).onClick { event ->
@@ -147,9 +151,11 @@ class ClanMenu(
                 scope.launch {
                     val user = userManager.getUser(player.uniqueId)
                     val clanTag = user.clanTag ?: return@launch
+
                     val clan = clanManager.getClan(clanTag) ?: return@launch
                     val clanRole = clan.members[user.uuid]
                     if (clanRole != ClanRole.LEADER) return@launch
+
                     clan.pvpEditMinRole = nextRole(clan.pvpEditMinRole)
                     clanManager.saveClan(clan)
                     miniText.deserialize(mainConfig.messages.pvpMinRoleUpdated.replace("[ROLE]", clan.pvpEditMinRole.name))
@@ -165,7 +171,7 @@ class ClanMenu(
     }
 
     private fun hasRoleAtLeast(current: ClanRole, minimum: ClanRole): Boolean {
-        fun weight(r: ClanRole) = when (r) {
+        fun weight(role: ClanRole) = when (role) {
             ClanRole.LEADER -> 3
             ClanRole.COLEADER -> 2
             ClanRole.MEMBER -> 1

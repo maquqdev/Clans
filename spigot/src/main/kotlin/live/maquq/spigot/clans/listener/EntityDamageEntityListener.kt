@@ -1,47 +1,56 @@
 package live.maquq.spigot.clans.listener
 
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
+import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.clan.ClanManager
+import org.bukkit.entity.EnderCrystal
 import org.bukkit.entity.Player
 import org.bukkit.entity.Projectile
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityDamageEvent
 
 class EntityDamageEntityListener(
     private val userManager: UserManager,
     private val clanManager: ClanManager,
+    private val mainConfig: PluginConfiguration,
     private val scope: CoroutineScope
 ) : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     fun handleEntityDamage(event: EntityDamageByEntityEvent) {
         val victim = event.entity as? Player ?: return
 
-        val damagerPlayer: Player? = when (val damager = event.damager) {
+        val attacker: Player? = when (val damager = event.damager) {
             is Player -> damager
-            is Projectile -> (damager.shooter as? Player)
+            is Projectile -> damager.shooter as? Player
             else -> null
         }
 
-        val attacker = damagerPlayer ?: return
-        if (attacker.uniqueId == victim.uniqueId) return
+        val attackerPlayer = attacker ?: return
+        if (attackerPlayer.uniqueId == victim.uniqueId) return
 
-        this.scope.launch {
-            val attackerUser = userManager.getUser(attacker.uniqueId)
-            val victimUser = userManager.getUser(victim.uniqueId)
+        val attackerUser = userManager.getCachedUser(attackerPlayer.uniqueId) ?: return
+        val victimUser = userManager.getCachedUser(victim.uniqueId) ?: return
 
-            val aClanTag = attackerUser.clanTag
-            val vClanTag = victimUser.clanTag
-            if (aClanTag == null ||
-                vClanTag == null ||
-                aClanTag != vClanTag) return@launch
+        val aClanTag = attackerUser.clanTag
+        val vClanTag = victimUser.clanTag
+        if (aClanTag == null || vClanTag == null || aClanTag != vClanTag)
+            return
 
-            val clan = clanManager.getClan(aClanTag) ?: return@launch
-            if (!clan.pvpEnabled)
-                event.isCancelled = true
+        val clan = clanManager.getCachedClan(aClanTag) ?: return
+
+        if (!clan.pvpEnabled) {
+            event.isCancelled = true
+            return
+        }
+
+        if (event.damager is EnderCrystal
+            && !mainConfig.clanSettings.crystalDamage) {
+            event.damage = 0.0
         }
     }
 }

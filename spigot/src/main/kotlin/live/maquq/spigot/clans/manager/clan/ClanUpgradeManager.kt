@@ -14,8 +14,7 @@ enum class UpgradeResult {
 }
 
 class ClanUpgradeManager(
-    private val mainConfig: PluginConfiguration,
-    private val clanManager: ClanManager
+    private val mainConfig: PluginConfiguration
 ) {
 
     fun upgrade(clan: Clan, type: UpgradeType, player: Player): UpgradeResult {
@@ -29,11 +28,13 @@ class ClanUpgradeManager(
                 val nextLevelIndex = if (currentLevel < 0) 0 else currentLevel
 
                 val costs = settings.sizeUpgradeCosts
-                val cost = if (costs.isEmpty()) 0 else if (nextLevelIndex < costs.size) costs[nextLevelIndex] else costs.last()
+                val cost = if (costs.isEmpty()) 0
+                    else if (nextLevelIndex < costs.size) costs[nextLevelIndex]
+                    else costs.last()
 
                 if (cost > 0) {
                     val hasPaid = ItemUtil.takeItems(player, settings.item, cost)
-                    if (!hasPaid) return UpgradeResult.INSUFFICIENT_ITEMS
+                    if (!hasPaid) UpgradeResult.INSUFFICIENT_ITEMS
                 }
 
                 clan.maxSize++
@@ -48,8 +49,7 @@ class ClanUpgradeManager(
                     .coerceIn(settings.pointsMultiplierStepMin, settings.pointsMultiplierStepMax)
 
                 if (effectiveStep <= 0.0) return UpgradeResult.INVALID_STEP
-                val epsilon = 1e-9
-                if (clan.pointsMultiplier >= maxMul - epsilon) return UpgradeResult.MAXED
+                if (clan.pointsMultiplier >= maxMul - 1e-9) return UpgradeResult.MAXED
 
                 val currentLevelDouble = ((clan.pointsMultiplier - defaultMul) / effectiveStep).coerceAtLeast(0.0)
                 val nextLevelIndex = currentLevelDouble.toInt()

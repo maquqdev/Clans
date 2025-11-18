@@ -283,7 +283,7 @@ class MySqlDataSource(
         }
 
         clansMap.values.map { agg ->
-            Clan(agg.tag, agg.owner, agg.members, 3, 1.0, agg.pvpEnabled, agg.pvpRole) // TODO: change default size
+            Clan(agg.tag, agg.owner, agg.members, maxClanSize, 1.0, agg.pvpEnabled, agg.pvpRole)
         }
     }
 

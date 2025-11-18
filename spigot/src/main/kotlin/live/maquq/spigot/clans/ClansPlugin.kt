@@ -14,10 +14,18 @@ class ClansPlugin : JavaPlugin() {
     /*
         TODO
 
-        Save wszystkich userow i clan
+        Clan menu -- 97 linijka
 
-       TODO Załadować dana il. użytkowników do topki (np. top 50)
        TODO VaultUnlocked hook żeby robić upgrade size klanu -- done?
+       TODO zrobić placeholdery:
+        - %clans_user_{KILLS/DEATHS/ASSISTS/POINTS}%
+        - %clans_users_{LICZBA}_{KILLS/DEATHS/ASSISTS/POINTS}% - pozycja w topce UZYTKOWNIKA
+
+        - %clans_clan_{KILLS/DEATHS/ASSISTS/POINTS}%
+        - %clans_clans_{LICZBA}_{KILLS/DEATHS/ASSISTS/POINTS}% - pozycja w topce KLANU
+
+        Po zrobieniu obu ww. rzeczy - przetestowac - commit
+        first release!
 
      */
 
@@ -36,11 +44,11 @@ class ClansPlugin : JavaPlugin() {
         val startTime = System.currentTimeMillis()
         this.logger.info(
             """
-                
-             ／l、         
-           （ﾟ､ ｡７           Thanks for using
-            l、ﾞ~ヽ              my plugin!
-            じしf_, )ノ         maquq @ 2025
+                                        
+                                     ／l、         
+                                   （ﾟ､ ｡７           Thanks for using
+                                    l、ﾞ~ヽ              my plugin!
+                                    じしf_, )ノ         maquq @ 2025
         """.trimIndent()
         )
 
@@ -53,7 +61,7 @@ class ClansPlugin : JavaPlugin() {
             listOf(
                 ConfigModule(),
                 PointsModule(),
-                DataSourceModule(3), //TODO
+                DataSourceModule(),
                 ManagersModule(),
                 ListenersModule(),
                 PreloadModule(),
@@ -75,7 +83,6 @@ class ClansPlugin : JavaPlugin() {
         runBlocking {
             if (this@ClansPlugin::initializer.isInitialized && this@ClansPlugin::ctx.isInitialized)
                 initializer.disableAll(ctx)
-
         }
         this.logger.shutdown()
         this.job.cancel()

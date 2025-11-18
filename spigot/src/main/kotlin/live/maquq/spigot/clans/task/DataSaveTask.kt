@@ -24,7 +24,7 @@ class DataSaveTask(
                 clanManager.saveClan(clan)
             }
 
-            logger.info("Saved every user and clan to database!")
+            logger.debug("Saved every user and clan to database!")
         }
     }
 }

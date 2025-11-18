@@ -9,9 +9,7 @@ import live.maquq.storage.impl.FlatDataSource
 import live.maquq.storage.impl.MongoDataSource
 import live.maquq.storage.impl.MySqlDataSource
 
-class DataSourceModule(
-    private val minClanSize: Int
-) : PluginModule {
+class DataSourceModule() : PluginModule {
     override val name: String = "Database"
 
     override suspend fun enable(ctx: PluginContext) {
@@ -32,8 +30,9 @@ class DataSourceModule(
         }
 
         runCatching { ctx.dataSource.connect() }
-            .onSuccess { ctx.logger.info("Successfully connected to database! '(${config.storage})'") }
-            .onFailure { ex ->
+            .onSuccess {
+                ctx.logger.info("Successfully connected to database! '(${config.storage})'")
+            }.onFailure { ex ->
                 ctx.logger.error("Cannot connect to database, check configuration please!", ex)
                 throw ex
             }

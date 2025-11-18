@@ -37,6 +37,7 @@ class ListenersModule : PluginModule {
             EntityDamageEntityListener(
                 ctx.userManager,
                 ctx.clanManager,
+                ctx.mainConfig.get,
                 ctx.scope
             ),
             plugin

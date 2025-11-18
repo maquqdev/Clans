@@ -142,7 +142,6 @@ class Config<T : ConfigTemplate>(
                 }
             }
             ConfigFormat.AUTO -> {
-                logger.error("Internal: AUTO format reached in loadFromFile(). Defaulting to YAML path.")
                 effectiveFormat = ConfigFormat.YAML
                 loadFromFile()
             }
