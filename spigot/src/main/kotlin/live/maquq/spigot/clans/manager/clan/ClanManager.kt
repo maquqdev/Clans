@@ -9,7 +9,7 @@ import live.maquq.api.events.clan.ClanCreateEvent
 import live.maquq.api.events.clan.ClanDeleteEvent
 import live.maquq.api.events.user.UserJoinClanEvent
 import live.maquq.api.user.clan.Clan
-import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.common.ClanRole
 import live.maquq.api.user.User
 import live.maquq.spigot.clans.BukkitLogger
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration

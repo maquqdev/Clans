@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import live.maquq.api.common.ClanQuitCause
 import live.maquq.api.events.user.UserQuitClanEvent
-import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.common.ClanRole
 import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager

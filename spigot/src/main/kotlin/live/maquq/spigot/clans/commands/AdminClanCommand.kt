@@ -7,7 +7,7 @@ import dev.rollczi.litecommands.annotations.context.Context
 import dev.rollczi.litecommands.annotations.execute.Execute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.common.ClanRole
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.clan.ClanManager

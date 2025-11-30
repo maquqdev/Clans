@@ -4,6 +4,7 @@ plugins {
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
     id("ru.endlesscode.bukkitgradle") version "1.0.0"
+    kotlin("plugin.serialization")
 }
 
 group = "live.maquq"

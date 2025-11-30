@@ -3,7 +3,7 @@ package live.maquq.spigot.clans.menu
 import com.bruhdows.minitext.MiniText
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import live.maquq.api.user.clan.ClanRole
+import live.maquq.api.common.ClanRole
 import live.maquq.spigot.clans.configuration.impl.GuiConfiguration
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager

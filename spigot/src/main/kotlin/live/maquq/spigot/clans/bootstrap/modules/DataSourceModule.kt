@@ -1,6 +1,5 @@
 package live.maquq.spigot.clans.bootstrap.modules
 
-import live.maquq.api.data.DataSource
 import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.PluginModule
 import live.maquq.spigot.clans.configuration.impl.PluginConfiguration

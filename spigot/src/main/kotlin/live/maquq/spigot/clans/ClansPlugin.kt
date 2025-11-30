@@ -61,7 +61,7 @@ class ClansPlugin : JavaPlugin() {
                 PreloadModule(),
                 TasksModule(),
                 CommandsModule(),
-                PlaceholdersModule(),
+                PlaceholdersModule(ctx.scope),
                 VersionCheckModule()
             ),
             this.logger

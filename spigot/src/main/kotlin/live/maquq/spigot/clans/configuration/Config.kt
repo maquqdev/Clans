@@ -188,7 +188,6 @@ class Config<T : ConfigTemplate>(
                     }
                 }
                 ConfigFormat.AUTO -> {
-                    // Should not happen; resolveEffectiveTarget sets concrete format
                     FileWriter(effectiveFile).use { writer ->
                         val tree: JsonElement = gson.toJsonTree(this.get)
                         val plain: Any? = jsonToPlain(tree)
@@ -257,7 +256,6 @@ class Config<T : ConfigTemplate>(
         else -> gson.toJsonTree(value)
     }
 
-    // --- YAML comments support (top-level keys) ---
     private fun hasCommentAnnotations(): Boolean {
         return try {
             hasCommentAnnotationsRecursive(configClass, HashSet())
@@ -295,7 +293,6 @@ class Config<T : ConfigTemplate>(
         var i = 0
         while (i < lines.size) {
             val line = lines[i]
-            // Match top-level keys: no leading spaces and contains ':'
             if (!line.startsWith(" ") && line.contains(":")) {
                 val key = line.substringBefore(":").trim()
                 val comment = comments[key]
