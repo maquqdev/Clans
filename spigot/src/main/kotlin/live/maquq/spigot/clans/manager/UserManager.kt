@@ -22,6 +22,7 @@ class UserManager(
 ) {
 
     private val userCache: MutableMap<UUID, User> = ConcurrentHashMap()
+    private val topUsersCache: MutableList<User> = mutableListOf()
 
     suspend fun getUser(uuid: UUID): User {
         this.userCache[uuid].let {
@@ -52,9 +53,9 @@ class UserManager(
 
     suspend fun loadTopUsers() {
         this.logger.debug("Loading 'top users' (50)...")
-        this.dataSource.getTopUsers(50).forEach { user ->
-            this.userCache[user.uuid] = user
-        }
+        this.topUsersCache.clear()
+        this.topUsersCache.addAll(this.dataSource.getTopUsers(50))
+        this.logger.debug("Loaded ${this.topUsersCache.size} top users into cache")
     }
 
     fun handlePlayerQuit(uuid: UUID) {
@@ -97,6 +98,7 @@ class UserManager(
             .replace("[POINTS]", targetUser.points.toString())
             .replace("[DEATHS]", targetUser.deaths.toString())
             .replace("[KILLS]", targetUser.kills.toString())
+            .replace("[ASSISTS]", targetUser.assists.toString())
             .replace("[KD]", kdFormatted)
 
         miniText.deserialize(message).component().let {
@@ -106,5 +108,9 @@ class UserManager(
 
     fun all(): List<User> {
         return this.userCache.values.toList()
+    }
+
+    fun getCachedTopUsers(limit: Int = 50): List<User> {
+        return this.topUsersCache.take(limit)
     }
 }

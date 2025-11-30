@@ -4,6 +4,7 @@ import dev.rollczi.litecommands.LiteCommands
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory
 import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.PluginModule
+import live.maquq.spigot.clans.commands.AdminClanCommand
 import live.maquq.spigot.clans.commands.ClanCommand
 import live.maquq.spigot.clans.commands.PlayerCommand
 import live.maquq.spigot.clans.commands.handler.InsufficientPermissionHandler
@@ -42,6 +43,13 @@ class CommandsModule : PluginModule {
                     scope = ctx.scope,
                     mainConfig = ctx.mainConfig.get,
                     userManager = ctx.userManager
+                ),
+                AdminClanCommand(
+                    userManager = ctx.userManager,
+                    clanManager = ctx.clanManager,
+                    miniText = ctx.miniText,
+                    mainConfig = ctx.mainConfig.get,
+                    scope = ctx.scope
                 )
             ).build()
 

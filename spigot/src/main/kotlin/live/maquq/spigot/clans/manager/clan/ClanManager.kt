@@ -29,6 +29,7 @@ class ClanManager(
 ) {
 
     private val clanCache: MutableMap<String, Clan> = ConcurrentHashMap()
+    private val topClansCache: MutableMap<String, ClanStats> = ConcurrentHashMap()
     private val pendingInvites: MutableMap<UUID, ClanInvite> = ConcurrentHashMap()
     private val requestDelete: MutableMap<UUID, Clan> = ConcurrentHashMap()
 
@@ -84,6 +85,17 @@ class ClanManager(
             this.clanCache[clan.tag] = clan
         }
         this.logger.debug("Loaded '${allClans.size}' clans to cache.")
+    }
+
+    suspend fun updateTopClansCache() {
+        this.logger.debug("Updating top clans cache...")
+        this.topClansCache.clear()
+        val allClans = this.dataSource.getAllClans()
+        for (clan in allClans) {
+            val stats = calculateClanStats(clan)
+            this.topClansCache[clan.tag] = stats
+        }
+        this.logger.debug("Updated top clans cache with ${this.topClansCache.size} clans")
     }
 
     fun createNewClan(tag: String, owner: User): Clan {
@@ -169,5 +181,51 @@ class ClanManager(
 
     fun all(): List<Clan> {
         return this.clanCache.values.toList()
+    }
+
+    fun getCachedTopClansByStat(stat: String, limit: Int = 50): List<Clan> {
+        return this.topClansCache.entries
+            .sortedByDescending { (_, stats) -> stats.getStatValue(stat) }
+            .take(limit)
+            .mapNotNull { (tag, _) -> this.clanCache[tag] }
+    }
+
+    suspend fun calculateClanStats(clan: Clan): ClanStats {
+        var totalKills = 0
+        var totalDeaths = 0
+        var totalAssists = 0
+        var totalPoints = 0
+
+        for (memberUuid in clan.members.keys) {
+            val user = this.userManager.getUser(memberUuid)
+            totalKills += user.kills
+            totalDeaths += user.deaths
+            totalAssists += user.assists
+            totalPoints += user.points
+        }
+
+        clan.members.size.let { totalMembers ->
+            totalPoints /= totalMembers
+            totalKills /= totalMembers
+            totalDeaths /= totalMembers
+            totalAssists /= totalMembers
+        }
+
+        return ClanStats(totalKills, totalDeaths, totalAssists, totalPoints)
+    }
+
+    data class ClanStats(
+        val kills: Int,
+        val deaths: Int,
+        val assists: Int,
+        val points: Int
+    ) {
+        fun getStatValue(stat: String): Int = when (stat) {
+            "KILLS" -> kills
+            "DEATHS" -> deaths
+            "ASSISTS" -> assists
+            "POINTS" -> points
+            else -> 0
+        }
     }
 }

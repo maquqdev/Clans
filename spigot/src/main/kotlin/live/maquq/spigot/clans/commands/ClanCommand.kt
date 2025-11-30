@@ -501,7 +501,7 @@ class ClanCommand(
                 return@launch
             }
 
-            val clan = clanManager.getClan(clanTag) ?: run {
+            clanManager.getClan(clanTag) ?: run {
                 miniText.deserialize(mainConfig.messages.clanNotFound).component().let { message ->
                     player.sendMessage(message)
                 }

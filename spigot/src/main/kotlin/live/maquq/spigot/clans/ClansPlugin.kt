@@ -17,12 +17,6 @@ class ClansPlugin : JavaPlugin() {
         Clan menu -- 97 linijka
 
        TODO VaultUnlocked hook żeby robić upgrade size klanu -- done?
-       TODO zrobić placeholdery:
-        - %clans_user_{KILLS/DEATHS/ASSISTS/POINTS}%
-        - %clans_users_{LICZBA}_{KILLS/DEATHS/ASSISTS/POINTS}% - pozycja w topce UZYTKOWNIKA
-
-        - %clans_clan_{KILLS/DEATHS/ASSISTS/POINTS}%
-        - %clans_clans_{LICZBA}_{KILLS/DEATHS/ASSISTS/POINTS}% - pozycja w topce KLANU
 
         Po zrobieniu obu ww. rzeczy - przetestowac - commit
         first release!
@@ -67,6 +61,7 @@ class ClansPlugin : JavaPlugin() {
                 PreloadModule(),
                 TasksModule(),
                 CommandsModule(),
+                PlaceholdersModule(),
                 VersionCheckModule()
             ),
             this.logger
@@ -89,4 +84,4 @@ class ClansPlugin : JavaPlugin() {
 
         super.getLogger().info("Plugin has been successfully disabled!")
     }
-}
+} 

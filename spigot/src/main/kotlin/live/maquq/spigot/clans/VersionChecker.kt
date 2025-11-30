@@ -20,7 +20,7 @@ class VersionChecker(
     fun check() {
         this.scope.launch {
             try {
-                val localVersion = plugin.description.version
+                val localVersion = plugin.pluginMeta.version
 
                 val remoteVersion = getRemoteVersion()
                 if (remoteVersion == null) {

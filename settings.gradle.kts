@@ -7,6 +7,7 @@ dependencyResolutionManagement {
     repositories {
         mavenCentral()
         maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://repo.extendedclip.com/content/repositories/placeholderapi")
         maven("https://repo.panda-lang.org/releases")
         maven("https://jitpack.io")
     }

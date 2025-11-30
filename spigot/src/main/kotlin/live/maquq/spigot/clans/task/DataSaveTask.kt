@@ -24,7 +24,11 @@ class DataSaveTask(
                 clanManager.saveClan(clan)
             }
 
-            logger.debug("Saved every user and clan to database!")
+            userManager.loadTopUsers()
+            clanManager.updateTopClansCache()
+            clanManager.preloadAllClansToCache()
+
+            logger.debug("Saved every user and clan to database and updated leaderboard caches!")
         }
     }
 }

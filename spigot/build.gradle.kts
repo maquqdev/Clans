@@ -15,8 +15,9 @@ bukkit {
 
     plugin {
         name = "Clans"
-        version = "0.6"
+        version = "0.8"
         main = "live.maquq.spigot.clans.ClansPlugin"
+        depend = listOf("PlaceholderAPI")
         authors = listOf("maquq")
     }
 
@@ -32,6 +33,7 @@ bukkit {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
+    compileOnly("me.clip:placeholderapi:2.11.7")
 
     implementation(project(":storage"))
     implementation(project(":gui"))

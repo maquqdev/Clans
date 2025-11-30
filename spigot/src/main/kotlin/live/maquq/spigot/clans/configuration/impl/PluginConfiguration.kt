@@ -144,6 +144,7 @@ class MessageSettings : ConfigTemplate {
     var maxSize: String = "[red]Twój klan ma maksymalną ilość członków"
     var leftClan: String = "[red]Opuszczono klan!"
     var requestDelete: String = "[red]Musisz wpisać ponownie ta komende, aby usunąć klan!"
+    var adminChangeSuccess: String = "[green]Pomyślnie zmieniono statystyki!"
 
     var pvpEnabledNow: String = "[green]PVP w twoim klanie jest teraz [bold]WŁĄCZONE"
     var pvpDisabledNow: String = "[red]PVP w twoim klanie jest teraz [bold]WYŁĄCZONE"

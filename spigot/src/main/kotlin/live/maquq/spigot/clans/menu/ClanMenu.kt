@@ -116,16 +116,16 @@ class ClanMenu(
                 it.isCancelled = true
                 if (!canToggle) return@onClick
                 scope.launch {
-                    val u = userManager.getUser(player.uniqueId)
-                    val t = u.clanTag ?: return@launch
-                    val c = clanManager.getClan(t) ?: return@launch
-                    val r = c.members[u.uuid]
-                    if (r == null || !hasRoleAtLeast(r, c.pvpEditMinRole)) return@launch
-                    c.pvpEnabled = !c.pvpEnabled
-                    clanManager.saveClan(c)
+                    val user = userManager.getUser(player.uniqueId)
+                    val clanTag = user.clanTag ?: return@launch
+                    val clan = clanManager.getClan(clanTag) ?: return@launch
+                    val clanMembers = clan.members[user.uuid]
+                    if (clanMembers == null || !hasRoleAtLeast(clanMembers, clan.pvpEditMinRole)) return@launch
+                    clan.pvpEnabled = !clan.pvpEnabled
+                    clanManager.saveClan(clan)
                     val msg =
-                        if (c.pvpEnabled) mainConfig.messages.pvpEnabledNow else mainConfig.messages.pvpDisabledNow
-                    miniText.deserialize(msg).component().let { player.sendMessage(it) }
+                        if (clan.pvpEnabled) mainConfig.messages.pvpEnabledNow else mainConfig.messages.pvpDisabledNow
+                    miniText.deserialize(msg).component().let { message -> player.sendMessage(message) }
                     open(player)
                 }
             }

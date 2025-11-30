@@ -307,7 +307,7 @@ class Config<T : ConfigTemplate>(
                     }
                     if (needsInsert) {
                         lines.add(i, commentLine)
-                        i += 1 // Skip over inserted comment
+                        i += 1
                     }
                 }
             }
