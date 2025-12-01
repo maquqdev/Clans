@@ -4,12 +4,12 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import live.maquq.api.common.ClanRole
 import live.maquq.api.data.DataSource
 import live.maquq.api.user.User
 import live.maquq.api.user.clan.Clan
-import live.maquq.api.common.ClanRole
-import java.sql.Connection
-import java.sql.ResultSet
+import org.jooq.*
+import org.jooq.impl.DSL
 import java.util.*
 
 class MySqlDataSource(
@@ -18,285 +18,287 @@ class MySqlDataSource(
 ) : DataSource {
 
     private lateinit var hikari: HikariDataSource
+    private lateinit var dsl: DSLContext
+
+    private val USERS = DSL.table("users")
+    private val USERS_UUID = DSL.field("uuid", String::class.java)
+    private val USERS_KILLS = DSL.field("kills", Int::class.java)
+    private val USERS_DEATHS = DSL.field("deaths", Int::class.java)
+    private val USERS_POINTS = DSL.field("points", Int::class.java)
+    private val USERS_ASSISTS = DSL.field("assists", Int::class.java)
+    private val USERS_CLAN_TAG = DSL.field("clanTag", String::class.java)
+
+    private val CLANS = DSL.table("clans")
+    private val CLANS_TAG = DSL.field("tag", String::class.java)
+    private val CLANS_OWNER = DSL.field("ownerUuid", String::class.java)
+    private val CLANS_PVP = DSL.field("pvpEnabled", Boolean::class.java)
+    private val CLANS_PVP_ROLE = DSL.field("pvpEditMinRole", String::class.java)
+
+    private val MEMBERS = DSL.table("clanMembers")
+    private val MEMBERS_CLAN = DSL.field("clanTag", String::class.java)
+    private val MEMBERS_UUID = DSL.field("userUuid", String::class.java)
+    private val MEMBERS_ROLE = DSL.field("role", String::class.java)
 
     override fun connect() {
         val config = HikariConfig().apply {
             jdbcUrl = "jdbc:mysql://${settings["host"]}:${settings["port"]}/${settings["database"]}" +
-                    "?autoReconnect=true&useServerPrepStmts=true&cachePrepStmts=true&rewriteBatchedStatements=true"
+                    "?useServerPrepStmts=true&cachePrepStmts=true&prepStmtCacheSize=500&prepStmtCacheSqlLimit=2048" +
+                    "&rewriteBatchedStatements=true&useCompression=true&maintainTimeStats=false"
             username = settings["username"] as String
             password = settings["password"] as String
 
-            maximumPoolSize = 10
-            minimumIdle = 2
-            connectionTimeout = 30000
-            idleTimeout = 600000
+            maximumPoolSize = 15
+            minimumIdle = 5
+            connectionTimeout = 20000
+            idleTimeout = 300000
             maxLifetime = 1800000
+            leakDetectionThreshold = 60000
 
             addDataSourceProperty("cachePrepStmts", "true")
-            addDataSourceProperty("prepStmtCacheSize", "250")
+            addDataSourceProperty("prepStmtCacheSize", "500")
             addDataSourceProperty("prepStmtCacheSqlLimit", "2048")
             addDataSourceProperty("useServerPrepStmts", "true")
+            addDataSourceProperty("useLocalSessionState", "true")
+            addDataSourceProperty("useLocalTransactionState", "true")
+            addDataSourceProperty("rewriteBatchedStatements", "true")
+            addDataSourceProperty("cacheResultSetMetadata", "true")
+            addDataSourceProperty("cacheServerConfiguration", "true")
+            addDataSourceProperty("maintainTimeStats", "false")
         }
+
         hikari = HikariDataSource(config)
+        dsl = DSL.using(hikari, SQLDialect.MYSQL)
+
         createTables()
     }
 
     private fun createTables() {
-        val userTableSql = """
-            CREATE TABLE IF NOT EXISTS users (
-                uuid VARCHAR(36) PRIMARY KEY,
-                kills INT NOT NULL DEFAULT 0,
-                deaths INT NOT NULL DEFAULT 0,
-                points INT NOT NULL DEFAULT 0,
-                clanTag VARCHAR(16),
-                INDEX idx_clan (clanTag)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """.trimIndent()
+        dsl.transaction { config ->
+            val ctx = DSL.using(config)
 
-        val clanTableSql = """
-            CREATE TABLE IF NOT EXISTS clans (
-                tag VARCHAR(16) PRIMARY KEY,
-                ownerUuid VARCHAR(36) NOT NULL,
-                pvpEnabled TINYINT(1) NOT NULL DEFAULT 1,
-                pvpEditMinRole VARCHAR(16) NOT NULL DEFAULT 'COLEADER',
-                INDEX idx_owner (ownerUuid)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """.trimIndent()
+            ctx.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    uuid VARCHAR(36) PRIMARY KEY,
+                    kills INT NOT NULL DEFAULT 0,
+                    deaths INT NOT NULL DEFAULT 0,
+                    points INT NOT NULL DEFAULT 0,
+                    assists INT NOT NULL DEFAULT 0,
+                    clanTag VARCHAR(16),
+                    INDEX idx_clan (clanTag),
+                    INDEX idx_points (points DESC)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ROW_FORMAT=DYNAMIC;
+            """.trimIndent())
 
-        val membersTableSql = """
-            CREATE TABLE IF NOT EXISTS clanMembers (
-                clanTag VARCHAR(16) NOT NULL,
-                userUuid VARCHAR(36) NOT NULL,
-                role VARCHAR(16) NOT NULL,
-                PRIMARY KEY (clanTag, userUuid),
-                INDEX idx_user (userUuid)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        """.trimIndent()
+            ctx.execute("""
+                CREATE TABLE IF NOT EXISTS clans (
+                    tag VARCHAR(16) PRIMARY KEY,
+                    ownerUuid VARCHAR(36) NOT NULL,
+                    pvpEnabled TINYINT(1) NOT NULL DEFAULT 1,
+                    pvpEditMinRole VARCHAR(16) NOT NULL DEFAULT 'COLEADER',
+                    INDEX idx_owner (ownerUuid)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ROW_FORMAT=DYNAMIC;
+            """.trimIndent())
 
-        hikari.connection.use { conn ->
-            conn.createStatement().use { stmt ->
-                stmt.execute(userTableSql)
-                stmt.execute(clanTableSql)
-                stmt.execute(membersTableSql)
-            }
+            ctx.execute("""
+                CREATE TABLE IF NOT EXISTS clanMembers (
+                    clanTag VARCHAR(16) NOT NULL,
+                    userUuid VARCHAR(36) NOT NULL,
+                    role VARCHAR(16) NOT NULL,
+                    PRIMARY KEY (clanTag, userUuid),
+                    INDEX idx_user (userUuid),
+                    FOREIGN KEY (clanTag) REFERENCES clans(tag) ON DELETE CASCADE
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ROW_FORMAT=DYNAMIC;
+            """.trimIndent())
         }
     }
 
     override fun disconnect() {
-        if (this::hikari.isInitialized && !hikari.isClosed) {
+        if (::hikari.isInitialized && !hikari.isClosed) {
             hikari.close()
         }
     }
 
-    private suspend fun <T> query(block: (Connection) -> T): T = withContext(Dispatchers.IO) {
-        hikari.connection.use(block)
-    }
+    private suspend fun <T> query(block: (DSLContext) -> T): T =
+        withContext(Dispatchers.IO) { block(dsl) }
 
-    private suspend fun <T> transaction(block: (Connection) -> T): T = withContext(Dispatchers.IO) {
-        hikari.connection.use { conn ->
-            conn.autoCommit = false
-            try {
-                block(conn).also { conn.commit() }
-            } catch (e: Exception) {
-                conn.rollback()
-                throw e
-            } finally {
-                conn.autoCommit = true
+    override suspend fun loadUser(uuid: UUID): User? = query { ctx ->
+        ctx.selectFrom(USERS)
+            .where(USERS_UUID.eq(uuid.toString()))
+            .fetchOne()
+            ?.let { record ->
+                User(
+                    uuid = UUID.fromString(record.get(USERS_UUID)),
+                    kills = record.get(USERS_KILLS),
+                    deaths = record.get(USERS_DEATHS),
+                    points = record.get(USERS_POINTS),
+                    assists = record.get(USERS_ASSISTS),
+                    clanTag = record.get(USERS_CLAN_TAG)
+                )
             }
-        }
     }
 
-    private fun ResultSet.toUser(): User = User(
-        uuid = UUID.fromString(getString("uuid")),
-        kills = getInt("kills"),
-        deaths = getInt("deaths"),
-        points = getInt("points"),
-        clanTag = getString("clanTag")
-    )
-
-    override suspend fun loadUser(uuid: UUID): User? = query { conn ->
-        conn.prepareStatement("SELECT * FROM users WHERE uuid = ?").use { stmt ->
-            stmt.setString(1, uuid.toString())
-            stmt.executeQuery().use { rs ->
-                if (rs.next()) rs.toUser() else null
-            }
-        }
+    override suspend fun saveUser(user: User): Int = query { ctx ->
+        ctx.insertInto(USERS)
+            .set(USERS_UUID, user.uuid.toString())
+            .set(USERS_KILLS, user.kills)
+            .set(USERS_DEATHS, user.deaths)
+            .set(USERS_POINTS, user.points)
+            .set(USERS_ASSISTS, user.assists)
+            .set(USERS_CLAN_TAG, user.clanTag)
+            .onDuplicateKeyUpdate()
+            .set(USERS_KILLS, user.kills)
+            .set(USERS_DEATHS, user.deaths)
+            .set(USERS_POINTS, user.points)
+            .set(USERS_ASSISTS, user.assists)
+            .set(USERS_CLAN_TAG, user.clanTag)
+            .execute()
+        0
     }
 
-    override suspend fun saveUser(user: User) = query { conn ->
-        val sql = """
-            INSERT INTO users (uuid, kills, deaths, points, clanTag) 
-            VALUES (?, ?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE 
-                kills = VALUES(kills), 
-                deaths = VALUES(deaths), 
-                points = VALUES(points), 
-                clanTag = VALUES(clanTag)
-        """.trimIndent()
-
-        conn.prepareStatement(sql).use { stmt ->
-            stmt.setString(1, user.uuid.toString())
-            stmt.setInt(2, user.kills)
-            stmt.setInt(3, user.deaths)
-            stmt.setInt(4, user.points)
-            stmt.setString(5, user.clanTag)
-            stmt.executeUpdate()
-        }
+    override suspend fun removeUser(user: User): Int = query { ctx ->
+        ctx.deleteFrom(USERS)
+            .where(USERS_UUID.eq(user.uuid.toString()))
+            .execute()
+        0
     }
 
-    override suspend fun removeUser(user: User) = query { conn ->
-        conn.prepareStatement("DELETE FROM users WHERE uuid = ?").use { stmt ->
-            stmt.setString(1, user.uuid.toString())
-            stmt.executeUpdate()
-        }
-    }
-
-    override suspend fun loadClan(tag: String): Clan? = query { conn ->
-        val sql = """
-            SELECT 
-                c.tag, c.ownerUuid, c.pvpEnabled, c.pvpEditMinRole,
-                cm.userUuid, cm.role
-            FROM clans c
-            LEFT JOIN clanMembers cm ON c.tag = cm.clanTag
-            WHERE c.tag = ?
-        """.trimIndent()
-
-        conn.prepareStatement(sql).use { stmt ->
-            stmt.setString(1, tag)
-            stmt.executeQuery().use { rs ->
-                if (!rs.next()) return@query null
-
-                val clanTag = rs.getString("tag")
-                val ownerUuid = UUID.fromString(rs.getString("ownerUuid"))
-                val pvpEnabled = rs.getBoolean("pvpEnabled")
-                val pvpEditMinRole = ClanRole.valueOf(rs.getString("pvpEditMinRole"))
-                val members = mutableMapOf<UUID, ClanRole>()
-
-                rs.getString("userUuid")?.let {
-                    members[UUID.fromString(it)] = ClanRole.valueOf(rs.getString("role"))
-                }
-
-                while (rs.next()) {
-                    rs.getString("userUuid")?.let {
-                        members[UUID.fromString(it)] = ClanRole.valueOf(rs.getString("role"))
-                    }
-                }
-
-                Clan(clanTag, ownerUuid, members, this.maxClanSize, 1.0, pvpEnabled, pvpEditMinRole)
-            }
-        }
-    }
-
-    override suspend fun saveClan(clan: Clan) = transaction { conn ->
-        val clanSql = """
-            INSERT INTO clans (tag, ownerUuid, pvpEnabled, pvpEditMinRole) 
-            VALUES (?, ?, ?, ?) 
-            ON DUPLICATE KEY UPDATE 
-                ownerUuid = VALUES(ownerUuid),
-                pvpEnabled = VALUES(pvpEnabled),
-                pvpEditMinRole = VALUES(pvpEditMinRole)
-        """.trimIndent()
-
-        conn.prepareStatement(clanSql).use { stmt ->
-            stmt.setString(1, clan.tag)
-            stmt.setString(2, clan.ownerUuid.toString())
-            stmt.setBoolean(3, clan.pvpEnabled)
-            stmt.setString(4, clan.pvpEditMinRole.name)
-            stmt.executeUpdate()
-        }
-
-        conn.prepareStatement("DELETE FROM clanMembers WHERE clanTag = ?").use { stmt ->
-            stmt.setString(1, clan.tag)
-            stmt.executeUpdate()
-        }
-
-        if (clan.members.isNotEmpty()) {
-            val memberSql = "INSERT INTO clanMembers (clanTag, userUuid, role) VALUES (?, ?, ?)"
-            conn.prepareStatement(memberSql).use { stmt ->
-                clan.members.forEach { (uuid, role) ->
-                    stmt.setString(1, clan.tag)
-                    stmt.setString(2, uuid.toString())
-                    stmt.setString(3, role.name)
-                    stmt.addBatch()
-                }
-                stmt.executeBatch()
-            }
-        }
-    }
-
-    override suspend fun deleteClan(tag: String) = transaction { conn ->
-        conn.prepareStatement("DELETE FROM clanMembers WHERE clanTag = ?").use { stmt ->
-            stmt.setString(1, tag)
-            stmt.executeUpdate()
-        }
-
-        conn.prepareStatement("DELETE FROM clans WHERE tag = ?").use { stmt ->
-            stmt.setString(1, tag)
-            stmt.executeUpdate()
-        }
-
-        conn.prepareStatement("UPDATE users SET clanTag = NULL WHERE clanTag = ?").use { stmt ->
-            stmt.setString(1, tag)
-            stmt.executeUpdate()
-        }
-    }
-
-    override suspend fun getAllClans(): List<Clan> = query { conn ->
-        val sql = """
-            SELECT 
-                c.tag, c.ownerUuid, c.pvpEnabled, c.pvpEditMinRole,
-                cm.userUuid, cm.role
-            FROM clans c
-            LEFT JOIN clanMembers cm ON c.tag = cm.clanTag
-            ORDER BY c.tag
-        """.trimIndent()
-
-        data class ClanRowAgg(
-            val tag: String,
-            val owner: UUID,
-            val pvpEnabled: Boolean,
-            val pvpRole: ClanRole,
-            val members: MutableMap<UUID, ClanRole>
+    override suspend fun loadClan(tag: String): Clan? = query { ctx ->
+        val records = ctx.select(
+            CLANS_TAG, CLANS_OWNER, CLANS_PVP, CLANS_PVP_ROLE,
+            MEMBERS_UUID, MEMBERS_ROLE
         )
+            .from(CLANS)
+            .leftJoin(MEMBERS).on(CLANS_TAG.eq(MEMBERS_CLAN))
+            .where(CLANS_TAG.eq(tag))
+            .fetch()
 
-        val clansMap = mutableMapOf<String, ClanRowAgg>()
+        if (records.isEmpty()) return@query null
 
-        conn.prepareStatement(sql).use { stmt ->
-            stmt.executeQuery().use { rs ->
-                while (rs.next()) {
-                    val tag = rs.getString("tag")
-
-                    val agg = clansMap.getOrPut(tag) {
-                        val ownerUuid = UUID.fromString(rs.getString("ownerUuid"))
-                        val pvpEnabled = rs.getBoolean("pvpEnabled")
-                        val pvpRole = ClanRole.valueOf(rs.getString("pvpEditMinRole"))
-                        ClanRowAgg(tag, ownerUuid, pvpEnabled, pvpRole, mutableMapOf())
-                    }
-
-                    rs.getString("userUuid")?.let { uuidStr ->
-                        val uuid = UUID.fromString(uuidStr)
-                        val role = ClanRole.valueOf(rs.getString("role"))
-                        agg.members[uuid] = role
-                    }
+        val first = records.first()
+        val members = records
+            .mapNotNull { record ->
+                record.get(MEMBERS_UUID)?.let { uuid ->
+                    UUID.fromString(uuid) to ClanRole.valueOf(record.get(MEMBERS_ROLE))
                 }
             }
-        }
+            .toMap()
+            .toMutableMap()
 
-        clansMap.values.map { agg ->
-            Clan(agg.tag, agg.owner, agg.members, maxClanSize, 1.0, agg.pvpEnabled, agg.pvpRole)
+        Clan(
+            tag = first.get(CLANS_TAG),
+            ownerUuid = UUID.fromString(first.get(CLANS_OWNER)),
+            members = members,
+            maxSize = maxClanSize,
+            pointsMultiplier = 1.0,
+            pvpEnabled = first.get(CLANS_PVP),
+            pvpEditMinRole = ClanRole.valueOf(first.get(CLANS_PVP_ROLE))
+        )
+    }
+
+    override suspend fun saveClan(clan: Clan) {
+        query { ctx ->
+            ctx.transaction { config ->
+                val txCtx = DSL.using(config)
+
+                txCtx.insertInto(CLANS)
+                    .set(CLANS_TAG, clan.tag)
+                    .set(CLANS_OWNER, clan.ownerUuid.toString())
+                    .set(CLANS_PVP, clan.pvpEnabled)
+                    .set(CLANS_PVP_ROLE, clan.pvpEditMinRole.name)
+                    .onDuplicateKeyUpdate()
+                    .set(CLANS_OWNER, clan.ownerUuid.toString())
+                    .set(CLANS_PVP, clan.pvpEnabled)
+                    .set(CLANS_PVP_ROLE, clan.pvpEditMinRole.name)
+                    .execute()
+
+                txCtx.deleteFrom(MEMBERS)
+                    .where(MEMBERS_CLAN.eq(clan.tag))
+                    .execute()
+
+                if (clan.members.isNotEmpty()) {
+                    val insert = txCtx.insertInto(
+                        MEMBERS,
+                        MEMBERS_CLAN, MEMBERS_UUID, MEMBERS_ROLE
+                    )
+
+                    clan.members.forEach { (uuid, role) ->
+                        insert.values(clan.tag, uuid.toString(), role.name)
+                    }
+
+                    insert.execute()
+                }
+            }
         }
     }
 
-    override suspend fun getTopUsers(limit: Int): List<User> = query { conn ->
-        conn.prepareStatement("SELECT * FROM users ORDER BY points DESC LIMIT ?").use { stmt ->
-            stmt.setInt(1, limit)
-            stmt.executeQuery().use { rs ->
-                val list = mutableListOf<User>()
-                while (rs.next()) {
-                    list.add(rs.toUser())
-                }
-                list
-            }
+    override suspend fun deleteClan(tag: String): Int = query { ctx ->
+        ctx.transaction { config ->
+            val txCtx = DSL.using(config)
+
+            txCtx.deleteFrom(CLANS)
+                .where(CLANS_TAG.eq(tag))
+                .execute()
+
+            txCtx.update(USERS)
+                .setNull(USERS_CLAN_TAG)
+                .where(USERS_CLAN_TAG.eq(tag))
+                .execute()
         }
+        0
+    }
+
+    override suspend fun getAllClans(): List<Clan> = query { ctx ->
+        val records = ctx.select(
+            CLANS_TAG, CLANS_OWNER, CLANS_PVP, CLANS_PVP_ROLE,
+            MEMBERS_UUID, MEMBERS_ROLE
+        )
+            .from(CLANS)
+            .leftJoin(MEMBERS).on(CLANS_TAG.eq(MEMBERS_CLAN))
+            .orderBy(CLANS_TAG)
+            .fetch()
+
+        records
+            .groupBy { it.get(CLANS_TAG) }
+            .map { (tag, groupRecords) ->
+                val first = groupRecords.first()
+                val members = groupRecords
+                    .mapNotNull { record ->
+                        record.get(MEMBERS_UUID)?.let { uuid ->
+                            UUID.fromString(uuid) to ClanRole.valueOf(record.get(MEMBERS_ROLE))
+                        }
+                    }
+                    .toMap()
+                    .toMutableMap()
+
+                Clan(
+                    tag = tag,
+                    ownerUuid = UUID.fromString(first.get(CLANS_OWNER)),
+                    members = members,
+                    maxSize = maxClanSize,
+                    pointsMultiplier = 1.0,
+                    pvpEnabled = first.get(CLANS_PVP),
+                    pvpEditMinRole = ClanRole.valueOf(first.get(CLANS_PVP_ROLE))
+                )
+            }
+    }
+
+    override suspend fun getTopUsers(limit: Int): List<User> = query { ctx ->
+        ctx.selectFrom(USERS)
+            .orderBy(USERS_POINTS.desc())
+            .limit(limit)
+            .fetch()
+            .map { record ->
+                User(
+                    uuid = UUID.fromString(record.get(USERS_UUID)),
+                    kills = record.get(USERS_KILLS),
+                    deaths = record.get(USERS_DEATHS),
+                    points = record.get(USERS_POINTS),
+                    assists = record.get(USERS_ASSISTS),
+                    clanTag = record.get(USERS_CLAN_TAG)
+                )
+            }
     }
 }

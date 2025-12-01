@@ -15,7 +15,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:1.6.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    runtimeOnly("com.mysql:mysql-connector-j:8.0.33")
+    implementation("org.jooq:jooq:3.19.1")
+    implementation("org.jooq:jooq-kotlin:3.19.1")
+
+    implementation("com.mysql:mysql-connector-j:8.2.0")
+
+    implementation("com.zaxxer:HikariCP:5.1.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 }
 
