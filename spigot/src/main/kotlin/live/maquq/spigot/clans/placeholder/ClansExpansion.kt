@@ -24,7 +24,7 @@ class ClansExpansion(
 
         val parts = params.split("_")
         if (parts.isEmpty()) return null
-
+    
         return when (parts[0]) {
             "user" -> handleUserPlaceholders(player, parts)
             "users" -> handleUserLeaderboardPlaceholders(parts)

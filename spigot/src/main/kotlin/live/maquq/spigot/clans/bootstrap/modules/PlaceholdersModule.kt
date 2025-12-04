@@ -23,13 +23,11 @@ class PlaceholdersModule(
             clanManager = ctx.clanManager
         )
 
-        this.scope.launch {
             if (expansion.register()) {
                 ctx.logger.info("Successfully registered Clans placeholder expansion")
             } else {
                 ctx.logger.error("Failed to register Clans placeholder expansion")
             }
-        }
     }
 
     override suspend fun disable(ctx: PluginContext) {

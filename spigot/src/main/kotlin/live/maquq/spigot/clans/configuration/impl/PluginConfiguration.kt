@@ -98,6 +98,7 @@ class ProportionalPointsConfiguration : ConfigTemplate {
 class MessageSettings : ConfigTemplate {
     var noPermission: String = "[red]Nie masz uprawnień do wykonania tej komendy. [dark_red]([PERMISSION])"
     var correctUsage: String = "[red]Poprawne uzycie z komendy: [CORRECT]"
+    var correctUsageAll: String = "[red]- [SCHEMA]"
     var correctUsages: String = "[red]Poprawne uzycie z komendy:"
 
     var clanNotFound: String = "[red]Klan o podanej nazwie nie istnieje."
@@ -144,6 +145,7 @@ class MessageSettings : ConfigTemplate {
     var maxSize: String = "[red]Twój klan ma maksymalną ilość członków"
     var leftClan: String = "[red]Opuszczono klan!"
     var requestDelete: String = "[red]Musisz wpisać ponownie ta komende, aby usunąć klan!"
+    var deleted: String = "[red]Usunieto klan."
     var adminChangeSuccess: String = "[green]Pomyślnie zmieniono statystyki!"
 
     var pvpEnabledNow: String = "[green]PVP w twoim klanie jest teraz [bold]WŁĄCZONE"

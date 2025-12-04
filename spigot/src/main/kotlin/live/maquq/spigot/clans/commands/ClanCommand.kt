@@ -313,6 +313,9 @@ class ClanCommand(
 //                            userManager.getUser(member.key).clanTag = null
 //                        }
                         clanManager.deleteClan(clan)
+                        miniText.deserialize(mainConfig.messages.deleted).component().let {
+                            player.sendMessage(it)
+                        }
                     } else
                         miniText.deserialize(mainConfig.messages.requestDelete).component().let {
                             player.sendMessage(it)

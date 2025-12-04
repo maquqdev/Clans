@@ -40,7 +40,12 @@ class InvalidUsageHandler(
             sender.sendMessage(it)
         }
         for (scheme in schematic.all()) {
-            sender.sendMessage("- $scheme")
+            this.miniText.deserialize(
+                this.pluginConfiguration.messages.correctUsageAll
+                    .replace("[SCHEMA]", scheme)
+            ).component().let {
+                sender.sendMessage(it)
+            }
         }
     }
 }
