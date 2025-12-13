@@ -37,7 +37,20 @@
 - `/klan pvp <on/off/toggle>` – Edytowanie PvP statusu PvP w klanie
 
 ## Konfiguracja
-Przejrzysta, prosta w JSON - zobacz sobie jak konfigurować JSON [tutaj](https://learnxinyminutes.com/docs/json/)
+Przejrzysta, prosta w YML
+
+## PlaceholderAPI
+Dla wyświetlonego gracza:
+`%clans_user_{kills/deaths/assists/points}%`
+
+Dla topki graczy (od 1 do 100):
+`%clans_users_{1-100}_{kills/deaths/assists/points}%`
+
+Dla klanu gracza:
+`%clans_clan_{kills/deaths/assists/points}%`
+
+Dla topki klanu (od 1 do 100):
+`%clans_clans_{1-100}_{kills/deaths/assists/points}%`
 
 ## API dla Deweloperów
 
