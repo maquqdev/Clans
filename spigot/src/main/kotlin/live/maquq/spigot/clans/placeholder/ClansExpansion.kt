@@ -24,7 +24,7 @@ class ClansExpansion(
 
         val parts = params.split("_")
         if (parts.isEmpty()) return null
-    
+
         return when (parts[0]) {
             "user" -> handleUserPlaceholders(player, parts)
             "users" -> handleUserLeaderboardPlaceholders(parts)
@@ -89,10 +89,12 @@ class ClansExpansion(
     }
 
     private fun handleClanLeaderboardPlaceholders(parts: List<String>): String {
-        if (parts.size < 3) return "0"
+        // %clans_clans_<position>_<field>_<stat>%
+        if (parts.size < 4) return "0"
 
         val position = parts[1].toIntOrNull() ?: return "0"
-        val stat = parts[2].uppercase()
+        val field = parts[2].uppercase()
+        val stat = parts[3].uppercase()
 
         val topClans = clanManager.getCachedTopClansByStat(stat, 100)
         if (position < 1 || position > topClans.size) return "0"
@@ -100,12 +102,13 @@ class ClansExpansion(
         val clan = topClans[position - 1]
         val clanStats = runBlocking { clanManager.calculateClanStats(clan) }
 
-        return when (stat) {
+        return when (field) {
+            "TAG" -> clan.tag
             "KILLS" -> clanStats.kills.toString()
             "DEATHS" -> clanStats.deaths.toString()
             "ASSISTS" -> clanStats.assists.toString()
             "POINTS" -> clanStats.points.toString()
-            else -> "0"
+            else -> "Brak"
         }
     }
 

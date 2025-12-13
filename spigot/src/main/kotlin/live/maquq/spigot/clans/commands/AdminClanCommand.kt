@@ -12,6 +12,7 @@ import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.clan.ClanManager
 import org.bukkit.entity.Player
+import kotlin.random.Random
 
 enum class ModifyType {
     ADD,
@@ -128,6 +129,20 @@ class AdminClanCommand(
             }
 
             clanManager.saveClan(clan)
+
+            miniText.deserialize(mainConfig.messages.adminChangeSuccess).component().let {
+                player.sendMessage(it)
+            }
+        }
+    }
+
+    @Execute(name = "randomizeStats")
+    fun executeRandomize(@Context player: Player) {
+        this.scope.launch {
+            val user = userManager.getUser(player.uniqueId)
+            user.kills = Random.nextInt(0, 1000)
+            user.deaths = Random.nextInt(0, 1000)
+            userManager.saveUser(user)
 
             miniText.deserialize(mainConfig.messages.adminChangeSuccess).component().let {
                 player.sendMessage(it)

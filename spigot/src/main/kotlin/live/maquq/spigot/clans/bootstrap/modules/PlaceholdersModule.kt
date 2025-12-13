@@ -1,15 +1,11 @@
 package live.maquq.spigot.clans.bootstrap.modules
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import live.maquq.spigot.clans.bootstrap.PluginContext
 import live.maquq.spigot.clans.bootstrap.PluginModule
 import live.maquq.spigot.clans.placeholder.ClansExpansion
 import org.bukkit.Bukkit
 
-class PlaceholdersModule(
-    private val scope: CoroutineScope
-) : PluginModule {
+class PlaceholdersModule() : PluginModule {
     override val name: String = "Placeholders"
 
     override suspend fun enable(ctx: PluginContext) {
@@ -23,11 +19,13 @@ class PlaceholdersModule(
             clanManager = ctx.clanManager
         )
 
+        Bukkit.getScheduler().runTask(ctx.plugin, Runnable {
             if (expansion.register()) {
                 ctx.logger.info("Successfully registered Clans placeholder expansion")
             } else {
                 ctx.logger.error("Failed to register Clans placeholder expansion")
             }
+        })
     }
 
     override suspend fun disable(ctx: PluginContext) {
