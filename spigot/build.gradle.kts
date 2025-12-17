@@ -16,7 +16,7 @@ bukkit {
 
     plugin {
         name = "Clans"
-        version = "0.8"
+        version = "1.0"
         main = "live.maquq.spigot.clans.ClansPlugin"
         depend = listOf("PlaceholderAPI")
         authors = listOf("maquq")
