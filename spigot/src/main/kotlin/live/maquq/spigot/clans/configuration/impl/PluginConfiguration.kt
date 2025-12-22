@@ -102,6 +102,7 @@ class MessageSettings : ConfigTemplate {
     var correctUsages: String = "[red]Poprawne uzycie z komendy:"
 
     var clanNotFound: String = "[red]Klan o podanej nazwie nie istnieje."
+    var notInClanPlaceholder: String = "Brak"
     var clanAlreadyExists: String = "[red]Klan o podanym tagu już istnieje."
     var createdClan: String = "[green]Stworzono klan!"
     var alreadyInClan: String = "[red]Jestes juz w jakims klanie!"

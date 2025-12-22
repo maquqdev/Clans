@@ -1,6 +1,7 @@
 package live.maquq.spigot.clans.placeholder
 
 import kotlinx.coroutines.runBlocking
+import live.maquq.spigot.clans.configuration.impl.PluginConfiguration
 import live.maquq.spigot.clans.manager.UserManager
 import live.maquq.spigot.clans.manager.clan.ClanManager
 import me.clip.placeholderapi.expansion.PlaceholderExpansion
@@ -8,7 +9,8 @@ import org.bukkit.OfflinePlayer
 
 class ClansExpansion(
     private val userManager: UserManager,
-    private val clanManager: ClanManager
+    private val clanManager: ClanManager,
+    private val mainConfig: PluginConfiguration
 ) : PlaceholderExpansion() {
 
     override fun getIdentifier(): String = "clans"
@@ -44,6 +46,7 @@ class ClansExpansion(
             "DEATHS" -> user.deaths.toString()
             "ASSISTS" -> user.assists.toString()
             "POINTS" -> user.points.toString()
+            "CLAN" -> user.clanTag ?: mainConfig.messages.notInClanPlaceholder
             else -> null
         }
     }
