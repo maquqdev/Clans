@@ -18,7 +18,7 @@ dependencies {
     implementation("org.jooq:jooq:3.19.1")
     implementation("org.jooq:jooq-kotlin:3.19.1")
 
-    implementation("com.mysql:mysql-connector-j:8.2.0")
+    implementation("com.mysql:mysql-connector-j:8.4.0")
 
     implementation("com.zaxxer:HikariCP:7.0.2")
 
