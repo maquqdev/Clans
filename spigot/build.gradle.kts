@@ -39,7 +39,7 @@ dependencies {
     implementation(project(":storage"))
     implementation(project(":gui"))
     implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.11.0")
     implementation("dev.rollczi:litecommands-bukkit:3.10.4")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
     implementation("org.yaml:snakeyaml:2.0")
