@@ -3,6 +3,6 @@ dependencies {
 
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    api("com.github.Bruhdows:MiniText:v1.0.1")
+    api("com.github.Bruhdows:MiniText:1.0.1")
 }
 
