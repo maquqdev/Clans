@@ -40,7 +40,7 @@ dependencies {
     implementation(project(":gui"))
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("dev.rollczi:litecommands-bukkit:3.10.4")
+    implementation("dev.rollczi:litecommands-bukkit:3.11.0")
     implementation("com.googlecode.json-simple:json-simple:1.1.1")
     implementation("org.yaml:snakeyaml:2.0")
 }
